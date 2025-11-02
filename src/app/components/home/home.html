@@ -1,0 +1,184 @@
+<!-- Header -->
+<header class="header">
+  <div class="container">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <h1 class="logo">ViLab</h1>
+        <span class="tagline">Plataforma de Cursos Online</span>
+      </div>
+      <ul class="navbar-menu">
+        <li><a href="#" class="nav-link active">Inicio</a></li>
+        <li><a href="#" class="nav-link">Cursos</a></li>
+        <li><a href="#" class="nav-link">Laboratorios</a></li>
+        <li><a href="#" class="nav-link">Acerca de</a></li>
+        <li><a href="#" class="nav-link">Contacto</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <button class="btn btn-outline">Iniciar Sesión</button>
+        <button class="btn btn-primary">Registrarse</button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <h2 class="hero-title">Aprende sin límites</h2>
+      <p class="hero-subtitle">
+        Accede a miles de cursos y laboratorios virtuales de las mejores instituciones educativas del mundo.
+        Aprende a tu propio ritmo, desde cualquier lugar.
+      </p>
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Buscar cursos, instructores o temas..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+        >
+        <button class="search-btn" (click)="onSearch()">
+          <span class="search-icon">Buscar</span>
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <strong>100% Gratis</strong>
+          <span>Contenido libre y abierto</span>
+        </div>
+        <div class="stat-item">
+          <strong>Sin requisitos</strong>
+          <span>Comienza cuando quieras</span>
+        </div>
+        <div class="stat-item">
+          <strong>Certificados</strong>
+          <span>Al completar los cursos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories Section -->
+<section class="categories-section">
+  <div class="container">
+    <h2 class="section-title">Explora por Categoría</h2>
+    <div class="categories-grid">
+      <div 
+        *ngFor="let category of categories" 
+        class="category-card"
+        (click)="onCategoryClick(category)"
+      >
+        <div class="category-icon">{{ category.icon }}</div>
+        <h3 class="category-name">{{ category.name }}</h3>
+        <p class="category-count">{{ category.count }} cursos</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Courses Section -->
+<section class="courses-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Cursos Destacados</h2>
+      <a href="#" class="view-all">Ver todos →</a>
+    </div>
+    <div class="courses-grid">
+      <div 
+        *ngFor="let course of featuredCourses" 
+        class="course-card"
+        (click)="onCourseClick(course)"
+      >
+        <div class="course-image">
+          <img [src]="course.image" [alt]="course.title">
+          <span class="course-level">{{ course.level }}</span>
+        </div>
+        <div class="course-content">
+          <span class="course-category">{{ course.category }}</span>
+          <h3 class="course-title">{{ course.title }}</h3>
+          <p class="course-instructor">{{ course.instructor }}</p>
+          <div class="course-footer">
+            <div class="course-rating">
+              <span class="star">⭐</span>
+              <span class="rating-value">{{ course.rating }}</span>
+            </div>
+            <div class="course-students">
+              {{ course.students }} estudiantes
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div *ngFor="let stat of stats" class="stat-box">
+        <h3 class="stat-value">{{ stat.value }}</h3>
+        <p class="stat-label">{{ stat.label }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2 class="cta-title">¿Listo para comenzar tu aprendizaje?</h2>
+      <p class="cta-text">
+        Únete a miles de estudiantes que ya están transformando sus carreras con nuestros cursos y laboratorios virtuales.
+      </p>
+      <button class="btn btn-large btn-primary">Explorar Cursos</button>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-column">
+        <h4 class="footer-title">EduLab</h4>
+        <p class="footer-text">
+          Plataforma educativa abierta dedicada a ofrecer educación de calidad accesible para todos.
+        </p>
+      </div>
+      <div class="footer-column">
+        <h4 class="footer-title">Recursos</h4>
+        <ul class="footer-links">
+          <li><a href="#">Catálogo de Cursos</a></li>
+          <li><a href="#">Laboratorios</a></li>
+          <li><a href="#">Documentación</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4 class="footer-title">Comunidad</h4>
+        <ul class="footer-links">
+          <li><a href="#">Foros</a></li>
+          <li><a href="#">Eventos</a></li>
+          <li><a href="#">Contribuir</a></li>
+          <li><a href="#">Soporte</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4 class="footer-title">Legal</h4>
+        <ul class="footer-links">
+          <li><a href="#">Términos de Uso</a></li>
+          <li><a href="#">Privacidad</a></li>
+          <li><a href="#">Licencias</a></li>
+          <li><a href="#">Contacto</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 EduLab. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</footer>
