@@ -1,63 +1,47 @@
-<!-- Página completa sin header ni footer del layout -->
 <div class="lab-container">
   
-  <!-- Pantalla de inicio -->
-  <div *ngIf="!labStarted && !showQuiz" class="welcome-screen">
-    <div class="welcome-content">
-      <div class="lab-icon">🦾</div>
-      <h1 class="lab-title">Laboratorio de Prótesis Mioeléctrica</h1>
-      <p class="lab-instructor">Instructor: Ing. Frank Marcos</p>
-      
-      <div class="lab-description">
-        <h2>Sobre este laboratorio</h2>
-        <p>
-          En este laboratorio aprenderás cómo funcionan las prótesis mioeléctricas 
-          experimentando con control basado en visión por computadora. Utilizarás tu 
-          cámara para controlar una mano virtual en tiempo real.
-        </p>
-        
-        <h3>¿Qué harás?</h3>
-        <ul>
-          <li>Activar tu cámara para capturar movimientos de tu mano</li>
-          <li>Experimentar con detección de gestos usando IA</li>
-          <li>Observar cómo cada dedo es detectado individualmente</li>
-          <li>Ver la detección de puño cerrado</li>
-          <li>Completar un cuestionario final</li>
-        </ul>
+  <!-- Pantalla de carga -->
+  <div *ngIf="isLoading && !errorMessage" class="loading-screen">
+    <div class="spinner"></div>
+    <h2>Iniciando Laboratorio de Prótesis Mioeléctrica</h2>
+    <p>Solicitando acceso a la cámara...</p>
+    <p class="hint">Por favor, permite el acceso cuando tu navegador lo solicite</p>
+  </div>
 
-        <div class="lab-requirements">
-          <h3>Requisitos:</h3>
-          <ul>
-            <li>✓ Cámara web funcional</li>
-            <li>✓ Permisos de cámara habilitados</li>
-            <li>✓ Buena iluminación</li>
-            <li>✓ Conexión a internet estable</li>
-          </ul>
-        </div>
-      </div>
-
-      <button class="btn btn-primary btn-large" (click)="startLab()">
-        Comenzar Laboratorio
+  <!-- Pantalla de error -->
+  <div *ngIf="errorMessage" class="error-screen">
+    <div class="error-icon">⚠️</div>
+    <h2>Error al Iniciar el Laboratorio</h2>
+    <p class="error-message">{{ errorMessage }}</p>
+    <div class="error-actions">
+      <button class="btn btn-primary" (click)="retryCamera()">
+        🔄 Intentar de Nuevo
       </button>
       <button class="btn btn-outline" (click)="goToHome()">
-        Volver al inicio
+        ← Volver al Inicio
       </button>
+    </div>
+    <div class="error-help">
+      <h3>Posibles soluciones:</h3>
+      <ul>
+        <li>Asegúrate de hacer clic en "Permitir" cuando aparezca la solicitud de permisos</li>
+        <li>Verifica que ninguna otra aplicación esté usando la cámara</li>
+        <li>Revisa los permisos de la cámara en la configuración de tu navegador</li>
+        <li>Recarga la página (Ctrl/Cmd + R) e intenta nuevamente</li>
+      </ul>
     </div>
   </div>
 
-  <!-- Pantalla de conexión -->
-  <div *ngIf="isConnecting" class="connecting-screen">
-    <div class="spinner"></div>
-    <p>Conectando con el servidor...</p>
-  </div>
-
   <!-- Laboratorio activo -->
-  <div *ngIf="labStarted && cameraActive && !showQuiz" class="lab-active">
+  <div *ngIf="cameraActive && !showQuiz" class="lab-active">
     
     <!-- Barra superior -->
     <div class="lab-header">
       <div class="lab-header-content">
-        <h2>🦾 Laboratorio de Prótesis Mioeléctrica</h2>
+        <div class="lab-info">
+          <h2>🦾 Laboratorio de Prótesis Mioeléctrica</h2>
+          <p class="lab-subtitle">Ing. Frank Marcos</p>
+        </div>
         <button class="btn btn-danger" (click)="finishLab()">
           Finalizar Laboratorio
         </button>
@@ -214,10 +198,10 @@
 
         <div class="quiz-actions">
           <button class="btn btn-primary" (click)="restartLab()">
-            Repetir Laboratorio
+            🔄 Repetir Laboratorio
           </button>
           <button class="btn btn-outline" (click)="goToHome()">
-            Volver al Inicio
+            ← Volver al Inicio
           </button>
         </div>
       </div>

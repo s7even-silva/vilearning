@@ -73,96 +73,97 @@ $transition: all 0.3s ease;
   }
 }
 
-// Pantalla de bienvenida
-.welcome-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.welcome-content {
-  max-width: 800px;
-  background: $white;
-  border-radius: 12px;
-  padding: 3rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
-.lab-icon {
-  font-size: 5rem;
-  margin-bottom: 1.5rem;
-}
-
-.lab-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: $dark-color;
-  margin-bottom: 0.5rem;
-}
-
-.lab-instructor {
-  font-size: 1.1rem;
-  color: $text-light;
-  margin-bottom: 2rem;
-}
-
-.lab-description {
-  text-align: left;
-  margin-bottom: 2.5rem;
-
-  h2, h3 {
-    color: $dark-color;
-    margin: 1.5rem 0 1rem;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-  }
-
-  h3 {
-    font-size: 1.2rem;
-  }
-
-  p {
-    color: $text-color;
-    line-height: 1.7;
-    margin-bottom: 1rem;
-  }
-
-  ul {
-    margin-left: 1.5rem;
-    margin-bottom: 1rem;
-
-    li {
-      color: $text-color;
-      line-height: 1.8;
-      margin-bottom: 0.5rem;
-    }
-  }
-}
-
-.lab-requirements {
-  background: $light-bg;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-top: 1.5rem;
-}
-
-// Pantalla de conexión
-.connecting-screen {
+// Pantalla de carga
+.loading-screen {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+
+  h2 {
+    font-size: 1.75rem;
+    color: $dark-color;
+    margin: 0;
+  }
 
   p {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: $text-light;
+    margin: 0;
+  }
+
+  .hint {
+    font-size: 0.95rem;
+    color: $text-light;
+    background: #fff3cd;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    border: 1px solid #ffc107;
+  }
+}
+
+// Pantalla de error
+.error-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+
+  .error-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    color: $dark-color;
+    margin-bottom: 1rem;
+  }
+
+  .error-message {
+    font-size: 1.15rem;
+    color: $danger-color;
+    margin-bottom: 2rem;
+    max-width: 600px;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .error-help {
+    max-width: 600px;
+    background: $light-bg;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: left;
+
+    h3 {
+      font-size: 1.25rem;
+      color: $dark-color;
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin-left: 1.5rem;
+
+      li {
+        color: $text-color;
+        line-height: 1.8;
+        margin-bottom: 0.75rem;
+      }
+    }
   }
 }
 

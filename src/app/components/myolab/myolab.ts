@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -32,15 +32,11 @@ declare global {
   templateUrl: './myolab.html',
   styleUrls: ['./myolab.scss']
 })
-export class Myolab implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('videoElement', {static: false}) videoElement!: ElementRef<HTMLVideoElement>;
-  @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
-
+export class Myolab implements OnInit, OnDestroy {
   // Estados del laboratorio
-  labStarted = false;
   cameraActive = false;
-  isConnecting = false;
-  scriptsLoaded = false;
+  isLoading = true;
+  errorMessage = '';
   
   // Estados de la mano
   fingerStates: FingerState = {
@@ -57,6 +53,7 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
   private stream: MediaStream | null = null;
   private hands: any;
   private camera: any;
+  private scriptsLoaded = false;
 
   // Cuestionario
   showQuiz = false;
@@ -104,145 +101,118 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
     }
   ];
 
-  ngOnInit(): void {
-    this.loadMediaPipeScripts();
-  }
-
-  ngAfterViewInit(): void {
-    console.log('VideoElement en AfterViewInit: ', this.videoElement);
-    // luego llamar a startCamera si lo deseas
-    this.startCamera();
-    // Los elementos ya están disponibles aquí
+  async ngOnInit(): Promise<void> {
+    console.log('Iniciando laboratorio...');
+    await this.loadMediaPipeScripts();
+    await this.initializeLab();
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
   }
 
-  loadMediaPipeScripts(): void {
-    // Verificar si ya están cargados
+  async loadMediaPipeScripts(): Promise<void> {
     if (window.Hands && window.Camera) {
       this.scriptsLoaded = true;
+      console.log('Scripts ya cargados');
       return;
     }
 
-    // Cargar Drawing Utils primero
-    const drawingUtils = document.createElement('script');
-    drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
-    drawingUtils.crossOrigin = 'anonymous';
-    
-    drawingUtils.onload = () => {
-      // Luego Camera Utils
-      const cameraUtils = document.createElement('script');
-      cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
-      cameraUtils.crossOrigin = 'anonymous';
+    console.log('Cargando scripts de MediaPipe...');
+
+    return new Promise((resolve, reject) => {
+      const drawingUtils = document.createElement('script');
+      drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
+      drawingUtils.crossOrigin = 'anonymous';
       
-      cameraUtils.onload = () => {
-        // Finalmente Hands
-        const handsScript = document.createElement('script');
-        handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
-        handsScript.crossOrigin = 'anonymous';
+      drawingUtils.onload = () => {
+        const cameraUtils = document.createElement('script');
+        cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
+        cameraUtils.crossOrigin = 'anonymous';
         
-        handsScript.onload = () => {
-          this.scriptsLoaded = true;
-          console.log('Scripts de MediaPipe cargados correctamente');
+        cameraUtils.onload = () => {
+          const handsScript = document.createElement('script');
+          handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
+          handsScript.crossOrigin = 'anonymous';
+          
+          handsScript.onload = () => {
+            this.scriptsLoaded = true;
+            console.log('Scripts cargados correctamente');
+            resolve();
+          };
+          
+          handsScript.onerror = () => reject(new Error('Error cargando Hands'));
+          document.head.appendChild(handsScript);
         };
         
-        handsScript.onerror = () => {
-          console.error('Error al cargar MediaPipe Hands');
-        };
-        
-        document.head.appendChild(handsScript);
+        cameraUtils.onerror = () => reject(new Error('Error cargando Camera Utils'));
+        document.head.appendChild(cameraUtils);
       };
       
-      cameraUtils.onerror = () => {
-        console.error('Error al cargar Camera Utils');
-      };
-      
-      document.head.appendChild(cameraUtils);
-    };
-    
-    drawingUtils.onerror = () => {
-      console.error('Error al cargar Drawing Utils');
-    };
-    
-    document.head.appendChild(drawingUtils);
+      drawingUtils.onerror = () => reject(new Error('Error cargando Drawing Utils'));
+      document.head.appendChild(drawingUtils);
+    });
   }
 
-  async startLab(): Promise<void> {
-    if (!this.scriptsLoaded) {
-      alert('Los scripts de detección aún se están cargando. Por favor, espera un momento e intenta de nuevo.');
-      return;
-    }
-
-    this.labStarted = true;
-    this.isConnecting = true;
-
+  async initializeLab(): Promise<void> {
     try {
-      // Simular conexión al servidor
-      await this.simulateServerConnection();
+      // Esperar un poco para que los ViewChild estén listos
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Iniciar cámara
+      if (!this.scriptsLoaded) {
+        throw new Error('Scripts de MediaPipe no cargados');
+      }
+
+      console.log('Solicitando acceso a la cámara...');
       await this.startCamera();
       
-      this.isConnecting = false;
-    } catch (error) {
-      console.error('Error al iniciar el laboratorio:', error);
-      this.isConnecting = false;
-      alert('Hubo un error al iniciar el laboratorio. Por favor, recarga la página e intenta de nuevo.');
+      this.isLoading = false;
+      
+    } catch (error: any) {
+      console.error('Error al inicializar laboratorio:', error);
+      this.errorMessage = this.getErrorMessage(error);
+      this.isLoading = false;
     }
-  }
-
-  async simulateServerConnection(): Promise<void> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        console.log('Conectado al servidor (simulado)');
-        resolve();
-      }, 1500);
-    });
   }
 
   async startCamera(): Promise<void> {
     try {
-      console.log('Solicitando acceso a la cámara...');
-      
-      // Verificar si el navegador soporta getUserMedia
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Tu navegador no soporta acceso a la cámara');
       }
 
-      // Primero intentar con configuración más simple
-      let constraints: MediaStreamConstraints = {
+      console.log('Solicitando permisos de cámara...');
+      
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
         video: true,
         audio: false
-      };
+      });
+      
+      console.log('Stream obtenido');
 
-      console.log('Intentando acceder a la cámara con constraints:', constraints);
+      // Obtener elemento de video directamente del DOM
+      const video = document.querySelector('video') as HTMLVideoElement;
       
-      this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      console.log('Stream obtenido:', this.stream);
-      console.log('Tracks de video:', this.stream.getVideoTracks());
-      
-      if (!this.videoElement) {
-        throw new Error('Elemento de video no disponible');
+      if (!video) {
+        throw new Error('Elemento de video no encontrado en el DOM');
       }
+
+      console.log('Elemento de video encontrado:', video);
       
-      const video = this.videoElement.nativeElement;
       video.srcObject = this.stream;
-      video.muted = true; // Asegurar que esté muteado
-      video.playsInline = true; // Importante para móviles
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
       
-      console.log('Video element configurado, esperando metadata...');
+      console.log('Esperando metadata del video...');
       
-      // Esperar a que el video esté listo
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error('Timeout esperando metadata del video'));
+          reject(new Error('Timeout esperando video'));
         }, 10000);
 
         video.onloadedmetadata = () => {
-          console.log('Metadata cargada, dimensiones:', video.videoWidth, 'x', video.videoHeight);
+          console.log('Metadata cargada:', video.videoWidth, 'x', video.videoHeight);
           clearTimeout(timeout);
           
           video.play()
@@ -251,56 +221,27 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
               this.cameraActive = true;
               resolve();
             })
-            .catch((playError) => {
-              console.error('Error al reproducir video:', playError);
-              reject(playError);
-            });
+            .catch(reject);
         };
 
         video.onerror = (error) => {
-          console.error('Error en el elemento video:', error);
           clearTimeout(timeout);
           reject(error);
         };
       });
 
-      console.log('Video iniciado correctamente, inicializando MediaPipe...');
-
-      // Inicializar MediaPipe después de que el video esté listo
-      setTimeout(() => {
-        this.initializeMediaPipe();
-      }, 500);
+      console.log('Inicializando MediaPipe...');
+      setTimeout(() => this.initializeMediaPipe(), 1000);
       
     } catch (error: any) {
-      console.error('Error completo al acceder a la cámara:', error);
-      console.error('Nombre del error:', error.name);
-      console.error('Mensaje del error:', error.message);
-      
-      let errorMessage = 'No se pudo acceder a la cámara. ';
-      
-      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-        errorMessage += 'Permiso denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
-      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-        errorMessage += 'No se encontró ninguna cámara en tu dispositivo.';
-      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-        errorMessage += 'La cámara está siendo usada por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara.';
-      } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
-        errorMessage += 'La cámara no cumple con los requisitos necesarios.';
-      } else {
-        errorMessage += 'Error: ' + error.message;
-      }
-      
-      alert(errorMessage);
-      this.isConnecting = false;
-      this.labStarted = false;
-      this.cameraActive = false;
+      console.error('Error al acceder a la cámara:', error);
+      throw error;
     }
   }
 
   initializeMediaPipe(): void {
     if (!window.Hands || !window.Camera) {
-      console.error('MediaPipe no está disponible');
-      alert('Error al cargar el sistema de detección. Por favor, recarga la página.');
+      console.error('MediaPipe no disponible');
       return;
     }
 
@@ -320,7 +261,13 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
 
       this.hands.onResults((results: any) => this.onResults(results));
 
-      const video = this.videoElement.nativeElement;
+      // Obtener video del DOM
+      const video = document.querySelector('video') as HTMLVideoElement;
+      
+      if (!video) {
+        console.error('No se encontró el elemento de video');
+        return;
+      }
       
       this.camera = new window.Camera(video, {
         onFrame: async () => {
@@ -333,51 +280,36 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
       });
 
       this.camera.start();
-      console.log('MediaPipe inicializado correctamente');
+      console.log('MediaPipe inicializado');
       
     } catch (error) {
       console.error('Error al inicializar MediaPipe:', error);
-      alert('Error al iniciar el sistema de detección. Por favor, recarga la página.');
     }
   }
 
   onResults(results: any): void {
-    const canvas = this.canvasElement.nativeElement;
-    const ctx = canvas.getContext('2d');
+    // Obtener elementos del DOM directamente
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+    const video = document.querySelector('video') as HTMLVideoElement;
     
-    if (!ctx || !this.videoElement) return;
+    if (!canvas || !video) return;
 
-    const video = this.videoElement.nativeElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Limpiar canvas
     ctx.save();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Dibujar la imagen del video
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const landmarks = results.multiHandLandmarks[0];
-      
-      // Dibujar la mano
       this.drawHand(ctx, landmarks, canvas.width, canvas.height);
-      
-      // Detectar estado de los dedos
       this.detectFingerStates(landmarks);
-      
-      // Enviar datos al servidor (simulado)
-      this.sendToServer(this.fingerStates);
     } else {
-      // Si no se detecta mano, resetear estados
-      this.fingerStates = {
-        thumb: false,
-        index: false,
-        middle: false,
-        ring: false,
-        pinky: false
-      };
+      this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
       this.isFistClosed = false;
     }
 
@@ -386,12 +318,12 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
 
   drawHand(ctx: CanvasRenderingContext2D, landmarks: any[], width: number, height: number): void {
     const connections = [
-      [0, 1], [1, 2], [2, 3], [3, 4], // Pulgar
-      [0, 5], [5, 6], [6, 7], [7, 8], // Índice
-      [0, 9], [9, 10], [10, 11], [11, 12], // Medio
-      [0, 13], [13, 14], [14, 15], [15, 16], // Anular
-      [0, 17], [17, 18], [18, 19], [19, 20], // Meñique
-      [5, 9], [9, 13], [13, 17] // Palma
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      [0, 9], [9, 10], [10, 11], [11, 12],
+      [0, 13], [13, 14], [14, 15], [15, 16],
+      [0, 17], [17, 18], [18, 19], [19, 20],
+      [5, 9], [9, 13], [13, 17]
     ];
 
     ctx.strokeStyle = '#00FF00';
@@ -400,7 +332,6 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
     connections.forEach(([start, end]) => {
       const startPoint = landmarks[start];
       const endPoint = landmarks[end];
-      
       ctx.beginPath();
       ctx.moveTo(startPoint.x * width, startPoint.y * height);
       ctx.lineTo(endPoint.x * width, endPoint.y * height);
@@ -416,29 +347,12 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
   }
 
   detectFingerStates(landmarks: any[]): void {
-    // Detectar cada dedo basándose en la posición de los landmarks
-    // Pulgar
     this.fingerStates.thumb = landmarks[4].y > landmarks[3].y;
-    
-    // Índice
     this.fingerStates.index = landmarks[8].y > landmarks[6].y;
-    
-    // Medio
     this.fingerStates.middle = landmarks[12].y > landmarks[10].y;
-    
-    // Anular
     this.fingerStates.ring = landmarks[16].y > landmarks[14].y;
-    
-    // Meñique
     this.fingerStates.pinky = landmarks[20].y > landmarks[18].y;
-
-    // Detectar puño cerrado
     this.isFistClosed = Object.values(this.fingerStates).every(state => state);
-  }
-
-  sendToServer(data: FingerState): void {
-    // Aquí iría la lógica para enviar al WebSocket
-    // console.log('Datos de la mano:', data);
   }
 
   stopCamera(): void {
@@ -446,11 +360,9 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
       this.stream.getTracks().forEach(track => track.stop());
       this.stream = null;
     }
-    
     if (this.camera) {
       this.camera.stop();
     }
-    
     this.cameraActive = false;
   }
 
@@ -486,60 +398,28 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
   }
 
   restartLab(): void {
-    this.labStarted = false;
-    this.showQuiz = false;
-    this.currentQuestionIndex = 0;
-    this.userAnswers = [null, null, null];
-    this.quizCompleted = false;
-    this.score = 0;
-    this.fingerStates = {
-      thumb: false,
-      index: false,
-      middle: false,
-      ring: false,
-      pinky: false
-    };
-    this.isFistClosed = false;
+    window.location.reload();
   }
 
   goToHome(): void {
     window.location.href = '/';
   }
 
-  // Método de diagnóstico
-  async testCamera(): Promise<void> {
-    try {
-      console.log('=== DIAGNÓSTICO DE CÁMARA ===');
-      console.log('Navigator.mediaDevices disponible:', !!navigator.mediaDevices);
-      console.log('getUserMedia disponible:', !!navigator.mediaDevices?.getUserMedia);
-      
-      // Listar dispositivos disponibles
-      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        console.log('Dispositivos totales:', devices.length);
-        const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        console.log('Cámaras encontradas:', videoDevices.length);
-        videoDevices.forEach((device, index) => {
-          console.log(`Cámara ${index + 1}:`, device.label || 'Sin nombre', device.deviceId);
-        });
-      }
-      
-      // Intentar acceso básico
-      const testStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      console.log('✓ Acceso a cámara exitoso');
-      console.log('Stream ID:', testStream.id);
-      console.log('Video tracks:', testStream.getVideoTracks().length);
-      
-      testStream.getVideoTracks().forEach(track => {
-        console.log('Track settings:', track.getSettings());
-        track.stop();
-      });
-      
-      alert('✓ Cámara funcionando correctamente!\n\nPuedes ver los detalles en la consola (F12)');
-      
-    } catch (error: any) {
-      console.error('✗ Error en diagnóstico:', error);
-      alert('✗ Error al acceder a la cámara:\n\n' + error.name + ': ' + error.message);
+  retryCamera(): void {
+    this.errorMessage = '';
+    this.isLoading = true;
+    this.initializeLab();
+  }
+
+  getErrorMessage(error: any): string {
+    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+      return 'Permiso denegado. Por favor, permite el acceso a la cámara en tu navegador.';
+    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+      return 'No se encontró ninguna cámara en tu dispositivo.';
+    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+      return 'La cámara está siendo usada por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara.';
+    } else {
+      return 'Error al iniciar la cámara: ' + error.message;
     }
   }
 }
