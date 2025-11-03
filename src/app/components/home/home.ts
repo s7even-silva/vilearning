@@ -65,7 +65,7 @@ export class Home implements OnInit {
 
   onCourseClick(course: Course): void {
     if (course.id === 1) {
-      window.location.href = '/myolab';
+          this.router.navigate(['/myolab']);
     }
     // Aquí navegarías a la página de detalles del curso
     console.log('Curso seleccionado:', course.title);
