@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, Subject } from 'rxjs';
+import { WebcamImage, WebcamModule } from 'ngx-webcam';
 
 interface Question {
   id: number;
@@ -21,22 +23,33 @@ interface FingerState {
 declare global {
   interface Window {
     Hands: any;
-    Camera: any;
+    drawConnectors: any;
+    drawLandmarks: any;
+    HAND_CONNECTIONS: any;
   }
 }
 
 @Component({
   selector: 'app-myolab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WebcamModule],
   templateUrl: './myolab.html',
   styleUrls: ['./myolab.scss']
 })
 export class Myolab implements OnInit, OnDestroy {
-  // Estados del laboratorio
-  isLoading = true;
+  @ViewChild('handCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
+
+  // Control de cámara
+  permissionStatus: string = '';
   cameraActive = false;
-  
+  isLoading = true;
+  showCamera = false;
+  trigger: Subject<void> = new Subject();
+
+  // MediaPipe Hands
+  private hands: any;
+  private canvasCtx: CanvasRenderingContext2D | null = null;
+
   // Estados de la mano
   fingerStates: FingerState = {
     thumb: false,
@@ -45,7 +58,7 @@ export class Myolab implements OnInit, OnDestroy {
     ring: false,
     pinky: false
   };
-  
+
   isFistClosed = false;
   handStateText = 'Esperando mano...';
 
@@ -95,56 +108,189 @@ export class Myolab implements OnInit, OnDestroy {
     }
   ];
 
+  get $trigger(): Observable<void> {
+    return this.trigger.asObservable();
+  }
+
   ngOnInit(): void {
     console.log('Iniciando laboratorio...');
-    this.loadScriptsAndInitialize();
+    this.loadMediaPipeScripts();
   }
 
   ngOnDestroy(): void {
-    // Limpiar recursos si es necesario
+    if (this.hands) {
+      this.hands.close();
+    }
   }
 
-  loadScriptsAndInitialize(): void {
+  loadMediaPipeScripts(): void {
     // Cargar scripts de MediaPipe
-    const drawingUtils = document.createElement('script');
-    drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils';
-    document.head.appendChild(drawingUtils);
-
-    const cameraUtils = document.createElement('script');
-    cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils';
-    document.head.appendChild(cameraUtils);
-
     const handsScript = document.createElement('script');
-    handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands';
+    handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js';
+    handsScript.crossOrigin = 'anonymous';
     document.head.appendChild(handsScript);
 
-    // Esperar a que los scripts se carguen y luego inicializar
+    const drawingScript = document.createElement('script');
+    drawingScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js';
+    drawingScript.crossOrigin = 'anonymous';
+    document.head.appendChild(drawingScript);
+
+    // Esperar a que los scripts se carguen
     handsScript.onload = () => {
-      console.log('Scripts cargados');
-      setTimeout(() => this.initializeHandDetection(), 1000);
+      console.log('MediaPipe Hands cargado');
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 500);
+    };
+
+    handsScript.onerror = () => {
+      console.error('Error cargando MediaPipe Hands');
+      this.isLoading = false;
     };
   }
 
-  initializeHandDetection(): void {
-    const videoElement = document.getElementById('videoElement') as HTMLVideoElement;
-    const canvasElement = document.getElementById('handCanvas') as HTMLCanvasElement;
-    
-    if (!videoElement) {
-      console.error('No se encontró videoElement');
-      setTimeout(() => this.initializeHandDetection(), 500);
-      return;
-    }
-    if (!canvasElement) {
-      console.error('No se encontró canvas Element');
-      setTimeout(() => this.initializeHandDetection(), 500);
-      return;
-    }
-    const canvasCtx = canvasElement.getContext('2d')!;
+  checkPermission(): void {
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+      .then((stream) => {
+        this.permissionStatus = 'Allowed';
+        this.cameraActive = true;
+        this.showCamera = true;
+        console.log('Permiso de cámara concedido');
 
+        // Detener el stream inmediatamente, ngx-webcam lo manejará
+        stream.getTracks().forEach(track => track.stop());
+
+        // Inicializar MediaPipe después de un breve delay
+        setTimeout(() => this.initializeMediaPipe(), 1000);
+      })
+      .catch(err => {
+        this.permissionStatus = 'Not Allowed';
+        this.cameraActive = false;
+        console.error('Permiso de cámara denegado:', err);
+      });
+  }
+
+  initializeMediaPipe(): void {
+    if (!window.Hands) {
+      console.error('MediaPipe Hands no está disponible');
+      setTimeout(() => this.initializeMediaPipe(), 500);
+      return;
+    }
+
+    this.hands = new window.Hands({
+      locateFile: (file: string) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`;
+      }
+    });
+
+    this.hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    this.hands.onResults((results: any) => this.onHandResults(results));
+
+    console.log('MediaPipe Hands inicializado');
+  }
+
+  handleImage(webcamImage: WebcamImage): void {
+    if (!this.hands || !webcamImage) {
+      return;
+    }
+
+    // Crear una imagen para procesar
+    const img = new Image();
+    img.onload = async () => {
+      try {
+        await this.hands.send({ image: img });
+      } catch (error) {
+        console.error('Error procesando imagen:', error);
+      }
+    };
+    img.src = webcamImage.imageAsDataUrl;
+  }
+
+  onHandResults(results: any): void {
+    if (!this.canvasRef) {
+      return;
+    }
+
+    const canvas = this.canvasRef.nativeElement;
+    if (!this.canvasCtx) {
+      this.canvasCtx = canvas.getContext('2d');
+    }
+
+    if (!this.canvasCtx) {
+      return;
+    }
+
+    // Limpiar canvas
+    this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      const landmarks = results.multiHandLandmarks[0];
+
+      // Dibujar la mano
+      this.drawHand(landmarks, canvas);
+
+      // Analizar dedos
+      this.analyzeFingers(landmarks);
+    } else {
+      this.handStateText = 'No se detecta mano';
+      this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
+      this.isFistClosed = false;
+    }
+  }
+
+  drawHand(landmarks: any[], canvas: HTMLCanvasElement): void {
+    if (!this.canvasCtx) return;
+
+    const connections = [
+      [0, 1], [1, 2], [2, 3], [3, 4],      // Pulgar
+      [0, 5], [5, 6], [6, 7], [7, 8],      // Índice
+      [0, 9], [9, 10], [10, 11], [11, 12], // Medio
+      [0, 13], [13, 14], [14, 15], [15, 16], // Anular
+      [0, 17], [17, 18], [18, 19], [19, 20], // Meñique
+      [5, 9], [9, 13], [13, 17]            // Palma
+    ];
+
+    // Dibujar conexiones
+    this.canvasCtx.strokeStyle = '#00FF00';
+    this.canvasCtx.lineWidth = 3;
+
+    connections.forEach(([start, end]) => {
+      const startPoint = landmarks[start];
+      const endPoint = landmarks[end];
+
+      this.canvasCtx!.beginPath();
+      this.canvasCtx!.moveTo(startPoint.x * canvas.width, startPoint.y * canvas.height);
+      this.canvasCtx!.lineTo(endPoint.x * canvas.width, endPoint.y * canvas.height);
+      this.canvasCtx!.stroke();
+    });
+
+    // Dibujar puntos
+    const fingerTips = [4, 8, 12, 16, 20];
+    landmarks.forEach((landmark: any, index: number) => {
+      const x = landmark.x * canvas.width;
+      const y = landmark.y * canvas.height;
+
+      this.canvasCtx!.beginPath();
+      this.canvasCtx!.arc(x, y, fingerTips.includes(index) ? 8 : 5, 0, 2 * Math.PI);
+      this.canvasCtx!.fillStyle = fingerTips.includes(index) ? '#FF0000' : '#00FF00';
+      this.canvasCtx!.fill();
+      this.canvasCtx!.strokeStyle = 'white';
+      this.canvasCtx!.lineWidth = 2;
+      this.canvasCtx!.stroke();
+    });
+  }
+
+  analyzeFingers(landmarks: any[]): void {
     const fingerTips = [4, 8, 12, 16, 20];
     const fingerPips = [3, 6, 10, 14, 18];
 
-    const isFingerExtended = (landmarks: any[], fingerIndex: number): boolean => {
+    const isFingerExtended = (fingerIndex: number): boolean => {
       const tipIndex = fingerTips[fingerIndex];
       const pipIndex = fingerPips[fingerIndex];
 
@@ -155,113 +301,38 @@ export class Myolab implements OnInit, OnDestroy {
       }
     };
 
-    const drawHand = (landmarks: any[]) => {
-      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    // Analizar cada dedo
+    this.fingerStates.thumb = isFingerExtended(0);
+    this.fingerStates.index = isFingerExtended(1);
+    this.fingerStates.middle = isFingerExtended(2);
+    this.fingerStates.ring = isFingerExtended(3);
+    this.fingerStates.pinky = isFingerExtended(4);
 
-      const connections = [
-        [0, 1], [1, 2], [2, 3], [3, 4],
-        [0, 5], [5, 6], [6, 7], [7, 8],
-        [0, 9], [9, 10], [10, 11], [11, 12],
-        [0, 13], [13, 14], [14, 15], [15, 16],
-        [0, 17], [17, 18], [18, 19], [19, 20],
-        [5, 9], [9, 13], [13, 17]
-      ];
+    // Detectar puño cerrado
+    const extendedCount = Object.values(this.fingerStates).filter(x => x).length;
+    this.isFistClosed = extendedCount === 0;
 
-      canvasCtx.strokeStyle = '#00FF00';
-      canvasCtx.lineWidth = 3;
+    // Actualizar texto del estado
+    if (extendedCount === 0) {
+      this.handStateText = '✊ PUÑO CERRADO';
+    } else if (extendedCount === 5) {
+      this.handStateText = '🖐️ MANO ABIERTA';
+    } else if (extendedCount === 1 && this.fingerStates.index) {
+      this.handStateText = '☝️ ÍNDICE';
+    } else if (extendedCount === 2 && this.fingerStates.index && this.fingerStates.middle) {
+      this.handStateText = '✌️ VICTORIA';
+    } else {
+      this.handStateText = `${extendedCount} dedos extendidos`;
+    }
+  }
 
-      connections.forEach(([start, end]) => {
-        const startPoint = landmarks[start];
-        const endPoint = landmarks[end];
-
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
-        canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
-        canvasCtx.stroke();
-      });
-
-      landmarks.forEach((landmark: any, index: number) => {
-        const x = landmark.x * canvasElement.width;
-        const y = landmark.y * canvasElement.height;
-
-        canvasCtx.beginPath();
-        canvasCtx.arc(x, y, fingerTips.includes(index) ? 8 : 5, 0, 2 * Math.PI);
-        canvasCtx.fillStyle = fingerTips.includes(index) ? '#FF0000' : '#00FF00';
-        canvasCtx.fill();
-        canvasCtx.strokeStyle = 'white';
-        canvasCtx.lineWidth = 2;
-        canvasCtx.stroke();
-      });
-    };
-
-    const onResults = (results: any) => {
-      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
-
-        // Analizar dedos
-        this.fingerStates.thumb = isFingerExtended(landmarks, 0);
-        this.fingerStates.index = isFingerExtended(landmarks, 1);
-        this.fingerStates.middle = isFingerExtended(landmarks, 2);
-        this.fingerStates.ring = isFingerExtended(landmarks, 3);
-        this.fingerStates.pinky = isFingerExtended(landmarks, 4);
-
-        // Detectar puño cerrado
-        const extendedCount = Object.values(this.fingerStates).filter(x => x).length;
-        this.isFistClosed = extendedCount === 0;
-
-        // Actualizar texto del estado
-        if (extendedCount === 0) {
-          this.handStateText = '✊ PUÑO CERRADO';
-        } else if (extendedCount === 5) {
-          this.handStateText = '🖐️ MANO ABIERTA';
-        } else if (extendedCount === 1 && this.fingerStates.index) {
-          this.handStateText = '☝️ ÍNDICE';
-        } else if (extendedCount === 2 && this.fingerStates.index && this.fingerStates.middle) {
-          this.handStateText = '✌️ VICTORIA';
-        } else {
-          this.handStateText = `${extendedCount} dedos extendidos`;
-        }
-
-        drawHand(landmarks);
-      } else {
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        this.handStateText = 'No se detecta mano';
-        this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
-        this.isFistClosed = false;
+  startCapture(): void {
+    // Capturar imágenes continuamente
+    setInterval(() => {
+      if (this.cameraActive && this.showCamera) {
+        this.trigger.next();
       }
-    };
-
-    const hands = new window.Hands({
-      locateFile: (file: string) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-      }
-    });
-
-    hands.setOptions({
-      maxNumHands: 1,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-
-    hands.onResults(onResults);
-
-    const camera = new window.Camera(videoElement, {
-      onFrame: async () => {
-        await hands.send({ image: videoElement });
-      },
-      width: 640,
-      height: 480
-    });
-
-    camera.start().then(() => {
-      console.log('Cámara iniciada');
-      this.isLoading = false;
-      this.cameraActive = true;
-    }).catch((error: any) => {
-      console.error('Error al iniciar cámara:', error);
-      this.isLoading = false;
-    });
+    }, 100); // Capturar cada 100ms (10 fps)
   }
 
   finishLab(): void {

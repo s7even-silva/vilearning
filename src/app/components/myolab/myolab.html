@@ -1,15 +1,55 @@
 <div class="lab-container">
-  
+
   <!-- Pantalla de carga -->
   <div *ngIf="isLoading" class="loading-screen">
     <div class="spinner"></div>
     <h2>Cargando modelo de detección...</h2>
-    <p>Iniciando cámara y sistema de reconocimiento de manos</p>
+    <p>Iniciando sistema de reconocimiento de manos</p>
+  </div>
+
+  <!-- Pantalla de bienvenida / Permiso de cámara -->
+  <div *ngIf="!isLoading && !showCamera && !showQuiz" class="welcome-screen">
+    <div class="welcome-content">
+      <div class="welcome-icon">🦾</div>
+      <h1 class="lab-title">Laboratorio de Prótesis Mioeléctrica</h1>
+      <p class="lab-description">
+        En este laboratorio aprenderás sobre prótesis mioeléctricas utilizando
+        visión por computadora para detectar y rastrear los movimientos de tu mano en tiempo real.
+      </p>
+
+      <div class="features">
+        <div class="feature-item">
+          <span class="feature-icon">📹</span>
+          <h3>Detección en Tiempo Real</h3>
+          <p>Usa tu cámara para detectar los movimientos de tu mano</p>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🤖</span>
+          <h3>Inteligencia Artificial</h3>
+          <p>Tecnología MediaPipe Hands de Google</p>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📊</span>
+          <h3>Análisis de Gestos</h3>
+          <p>Detecta la flexión de cada dedo individualmente</p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" (click)="checkPermission()">
+        🎥 Activar Cámara y Comenzar
+      </button>
+
+      <div class="info-note">
+        <p><strong>Nota:</strong> Este laboratorio requiere acceso a tu cámara.
+        No se graba ni almacena ningún video. Todo el procesamiento se realiza
+        localmente en tu navegador.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Laboratorio activo -->
-  <div *ngIf="!isLoading && !showQuiz" class="lab-active">
-    
+  <div *ngIf="!isLoading && showCamera && !showQuiz" class="lab-active">
+
     <!-- Barra superior -->
     <div class="lab-header">
       <div class="lab-header-content">
@@ -25,24 +65,38 @@
 
     <!-- Área principal -->
     <div class="lab-workspace">
-      
+
       <!-- Video y Canvas -->
       <div class="video-section">
         <div class="video-container">
           <h3>Cámara en Vivo</h3>
-          <video id="videoElement" width="640" height="480" autoplay></video>
+          <webcam
+            [trigger]="$trigger"
+            (imageCapture)="handleImage($event)"
+            [width]="640"
+            [height]="480"
+            [imageQuality]="1"
+            [allowCameraSwitch]="true"
+            (initError)="cameraActive = false">
+          </webcam>
+          <button
+            class="btn btn-primary start-btn"
+            (click)="startCapture()"
+            *ngIf="cameraActive">
+            Iniciar Detección
+          </button>
         </div>
-        
+
         <div class="canvas-container">
           <h3>Detección de Mano</h3>
-          <canvas id="handCanvas" width="640" height="480"></canvas>
+          <canvas #handCanvas width="640" height="480"></canvas>
         </div>
       </div>
 
       <!-- Panel de control -->
       <div class="control-panel">
         <h3>Estado de la Mano Detectada</h3>
-        
+
         <div class="hand-state-display">
           <div class="hand-state-text">{{ handStateText }}</div>
         </div>
@@ -81,6 +135,7 @@
         <div class="info-box">
           <h4>💡 Instrucciones</h4>
           <ul>
+            <li>Haz clic en "Iniciar Detección" para comenzar</li>
             <li>Mueve tu mano frente a la cámara</li>
             <li>Prueba diferentes gestos</li>
             <li>Observa cómo se detecta cada dedo</li>
@@ -105,7 +160,7 @@
   <!-- Cuestionario -->
   <div *ngIf="showQuiz" class="quiz-container">
     <div class="quiz-content">
-      
+
       <!-- Resultados -->
       <div *ngIf="quizCompleted" class="quiz-results">
         <div class="result-icon">{{ score === 3 ? '🎉' : score >= 2 ? '👍' : '📚' }}</div>
@@ -125,7 +180,7 @@
           <h3>Revisión de Respuestas</h3>
           <div *ngFor="let question of questions; let i = index" class="review-item">
             <h4>{{ i + 1 }}. {{ question.question }}</h4>
-            <div class="review-answer" 
+            <div class="review-answer"
                  [class.correct]="userAnswers[i] === question.correctAnswer"
                  [class.incorrect]="userAnswers[i] !== question.correctAnswer">
               <p><strong>Tu respuesta:</strong> {{ question.options[userAnswers[i] || 0] }}</p>
@@ -174,21 +229,21 @@
           </div>
 
           <div class="question-navigation">
-            <button class="btn btn-outline" 
+            <button class="btn btn-outline"
                     (click)="previousQuestion()"
                     [disabled]="currentQuestionIndex === 0">
               ← Anterior
             </button>
-            
+
             <button *ngIf="currentQuestionIndex < questions.length - 1"
-                    class="btn btn-primary" 
+                    class="btn btn-primary"
                     (click)="nextQuestion()"
                     [disabled]="userAnswers[currentQuestionIndex] === null">
               Siguiente →
             </button>
 
             <button *ngIf="currentQuestionIndex === questions.length - 1"
-                    class="btn btn-primary" 
+                    class="btn btn-primary"
                     (click)="submitQuiz()"
                     [disabled]="userAnswers.includes(null)">
               Enviar Respuestas

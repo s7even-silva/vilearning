@@ -106,6 +106,87 @@ $transition: all 0.3s ease;
   }
 }
 
+// Pantalla de bienvenida
+.welcome-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.welcome-content {
+  max-width: 900px;
+  width: 100%;
+  background: $white;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  text-align: center;
+
+  .welcome-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .lab-title {
+    font-size: 2.5rem;
+    color: $dark-color;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .lab-description {
+    font-size: 1.15rem;
+    color: $text-color;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+
+  .feature-item {
+    text-align: center;
+
+    .feature-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      color: $dark-color;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: $text-light;
+      line-height: 1.5;
+    }
+  }
+}
+
+.info-note {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: $light-bg;
+  border-radius: 8px;
+  border-left: 4px solid $primary-color;
+
+  p {
+    margin: 0;
+    color: $text-color;
+    line-height: 1.6;
+  }
+}
+
 // Pantalla de error
 .error-screen {
   min-height: 100vh;
@@ -248,6 +329,27 @@ $transition: all 0.3s ease;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.video-container {
+  ::ng-deep webcam {
+    display: block;
+    width: 100%;
+
+    video {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: $dark-color;
+      transform: scaleX(-1);
+    }
+  }
+
+  .start-btn {
+    margin-top: 1rem;
+    width: 100%;
+  }
 }
 
 #videoElement {
@@ -285,6 +387,45 @@ $transition: all 0.3s ease;
     color: $dark-color;
     font-size: 1.1rem;
     margin-bottom: 1rem;
+  }
+}
+
+// Estado de la mano
+.hand-state-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+
+  .hand-state-text {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Caja de información
+.info-box {
+  background: lighten($primary-color, 45%);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 4px solid $primary-color;
+
+  h4 {
+    margin-top: 0;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.5rem;
+
+    li {
+      color: $text-color;
+      line-height: 1.8;
+      margin-bottom: 0.5rem;
+    }
   }
 }
 
