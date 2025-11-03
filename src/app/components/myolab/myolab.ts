@@ -34,9 +34,8 @@ declare global {
 })
 export class Myolab implements OnInit, OnDestroy {
   // Estados del laboratorio
-  cameraActive = false;
   isLoading = true;
-  errorMessage = '';
+  cameraActive = false;
   
   // Estados de la mano
   fingerStates: FingerState = {
@@ -48,12 +47,7 @@ export class Myolab implements OnInit, OnDestroy {
   };
   
   isFistClosed = false;
-
-  // Variables de MediaPipe
-  private stream: MediaStream | null = null;
-  private hands: any;
-  private camera: any;
-  private scriptsLoaded = false;
+  handStateText = 'Esperando mano...';
 
   // Cuestionario
   showQuiz = false;
@@ -101,273 +95,176 @@ export class Myolab implements OnInit, OnDestroy {
     }
   ];
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
     console.log('Iniciando laboratorio...');
-    await this.loadMediaPipeScripts();
-    await this.initializeLab();
+    this.loadScriptsAndInitialize();
   }
 
   ngOnDestroy(): void {
-    this.stopCamera();
+    // Limpiar recursos si es necesario
   }
 
-  async loadMediaPipeScripts(): Promise<void> {
-    if (window.Hands && window.Camera) {
-      this.scriptsLoaded = true;
-      console.log('Scripts ya cargados');
-      return;
-    }
+  loadScriptsAndInitialize(): void {
+    // Cargar scripts de MediaPipe
+    const drawingUtils = document.createElement('script');
+    drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils';
+    document.head.appendChild(drawingUtils);
 
-    console.log('Cargando scripts de MediaPipe...');
+    const cameraUtils = document.createElement('script');
+    cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils';
+    document.head.appendChild(cameraUtils);
 
-    return new Promise((resolve, reject) => {
-      const drawingUtils = document.createElement('script');
-      drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js';
-      drawingUtils.crossOrigin = 'anonymous';
-      
-      drawingUtils.onload = () => {
-        const cameraUtils = document.createElement('script');
-        cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
-        cameraUtils.crossOrigin = 'anonymous';
-        
-        cameraUtils.onload = () => {
-          const handsScript = document.createElement('script');
-          handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
-          handsScript.crossOrigin = 'anonymous';
-          
-          handsScript.onload = () => {
-            this.scriptsLoaded = true;
-            console.log('Scripts cargados correctamente');
-            resolve();
-          };
-          
-          handsScript.onerror = () => reject(new Error('Error cargando Hands'));
-          document.head.appendChild(handsScript);
-        };
-        
-        cameraUtils.onerror = () => reject(new Error('Error cargando Camera Utils'));
-        document.head.appendChild(cameraUtils);
-      };
-      
-      drawingUtils.onerror = () => reject(new Error('Error cargando Drawing Utils'));
-      document.head.appendChild(drawingUtils);
-    });
+    const handsScript = document.createElement('script');
+    handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands';
+    document.head.appendChild(handsScript);
+
+    // Esperar a que los scripts se carguen y luego inicializar
+    handsScript.onload = () => {
+      console.log('Scripts cargados');
+      setTimeout(() => this.initializeHandDetection(), 1000);
+    };
   }
 
-  async initializeLab(): Promise<void> {
-    try {
-      // Esperar un poco para que los ViewChild estén listos
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      if (!this.scriptsLoaded) {
-        throw new Error('Scripts de MediaPipe no cargados');
-      }
-
-      console.log('Solicitando acceso a la cámara...');
-      await this.startCamera();
-      
-      this.isLoading = false;
-      
-    } catch (error: any) {
-      console.error('Error al inicializar laboratorio:', error);
-      this.errorMessage = this.getErrorMessage(error);
-      this.isLoading = false;
-    }
-  }
-
-  async startCamera(): Promise<void> {
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Tu navegador no soporta acceso a la cámara');
-      }
-
-      console.log('Solicitando permisos de cámara...');
-      
-      this.stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true,
-        audio: false
-      });
-      
-      console.log('Stream obtenido');
-
-      // Obtener elemento de video directamente del DOM
-      const video = document.querySelector('video') as HTMLVideoElement;
-      
-      if (!video) {
-        throw new Error('Elemento de video no encontrado en el DOM');
-      }
-
-      console.log('Elemento de video encontrado:', video);
-      
-      video.srcObject = this.stream;
-      video.muted = true;
-      video.playsInline = true;
-      video.autoplay = true;
-      
-      console.log('Esperando metadata del video...');
-      
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Timeout esperando video'));
-        }, 10000);
-
-        video.onloadedmetadata = () => {
-          console.log('Metadata cargada:', video.videoWidth, 'x', video.videoHeight);
-          clearTimeout(timeout);
-          
-          video.play()
-            .then(() => {
-              console.log('Video reproduciendo');
-              this.cameraActive = true;
-              resolve();
-            })
-            .catch(reject);
-        };
-
-        video.onerror = (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        };
-      });
-
-      console.log('Inicializando MediaPipe...');
-      setTimeout(() => this.initializeMediaPipe(), 1000);
-      
-    } catch (error: any) {
-      console.error('Error al acceder a la cámara:', error);
-      throw error;
-    }
-  }
-
-  initializeMediaPipe(): void {
-    if (!window.Hands || !window.Camera) {
-      console.error('MediaPipe no disponible');
-      return;
-    }
-
-    try {
-      this.hands = new window.Hands({
-        locateFile: (file: string) => {
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }
-      });
-
-      this.hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
-
-      this.hands.onResults((results: any) => this.onResults(results));
-
-      // Obtener video del DOM
-      const video = document.querySelector('video') as HTMLVideoElement;
-      
-      if (!video) {
-        console.error('No se encontró el elemento de video');
-        return;
-      }
-      
-      this.camera = new window.Camera(video, {
-        onFrame: async () => {
-          if (this.hands && video.readyState === 4) {
-            await this.hands.send({ image: video });
-          }
-        },
-        width: 1280,
-        height: 720
-      });
-
-      this.camera.start();
-      console.log('MediaPipe inicializado');
-      
-    } catch (error) {
-      console.error('Error al inicializar MediaPipe:', error);
-    }
-  }
-
-  onResults(results: any): void {
-    // Obtener elementos del DOM directamente
-    const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-    const video = document.querySelector('video') as HTMLVideoElement;
+  initializeHandDetection(): void {
+    const videoElement = document.getElementById('videoElement') as HTMLVideoElement;
+    const canvasElement = document.getElementById('handCanvas') as HTMLCanvasElement;
     
-    if (!canvas || !video) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.save();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-      const landmarks = results.multiHandLandmarks[0];
-      this.drawHand(ctx, landmarks, canvas.width, canvas.height);
-      this.detectFingerStates(landmarks);
-    } else {
-      this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
-      this.isFistClosed = false;
+    if (!videoElement) {
+      console.error('No se encontró videoElement');
+      setTimeout(() => this.initializeHandDetection(), 500);
+      return;
     }
+    if (!canvasElement) {
+      console.error('No se encontró canvas Element');
+      setTimeout(() => this.initializeHandDetection(), 500);
+      return;
+    }
+    const canvasCtx = canvasElement.getContext('2d')!;
 
-    ctx.restore();
-  }
+    const fingerTips = [4, 8, 12, 16, 20];
+    const fingerPips = [3, 6, 10, 14, 18];
 
-  drawHand(ctx: CanvasRenderingContext2D, landmarks: any[], width: number, height: number): void {
-    const connections = [
-      [0, 1], [1, 2], [2, 3], [3, 4],
-      [0, 5], [5, 6], [6, 7], [7, 8],
-      [0, 9], [9, 10], [10, 11], [11, 12],
-      [0, 13], [13, 14], [14, 15], [15, 16],
-      [0, 17], [17, 18], [18, 19], [19, 20],
-      [5, 9], [9, 13], [13, 17]
-    ];
+    const isFingerExtended = (landmarks: any[], fingerIndex: number): boolean => {
+      const tipIndex = fingerTips[fingerIndex];
+      const pipIndex = fingerPips[fingerIndex];
 
-    ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 3;
+      if (fingerIndex === 0) { // Pulgar
+        return landmarks[tipIndex].x < landmarks[pipIndex].x;
+      } else {
+        return landmarks[tipIndex].y < landmarks[pipIndex].y;
+      }
+    };
 
-    connections.forEach(([start, end]) => {
-      const startPoint = landmarks[start];
-      const endPoint = landmarks[end];
-      ctx.beginPath();
-      ctx.moveTo(startPoint.x * width, startPoint.y * height);
-      ctx.lineTo(endPoint.x * width, endPoint.y * height);
-      ctx.stroke();
+    const drawHand = (landmarks: any[]) => {
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+      const connections = [
+        [0, 1], [1, 2], [2, 3], [3, 4],
+        [0, 5], [5, 6], [6, 7], [7, 8],
+        [0, 9], [9, 10], [10, 11], [11, 12],
+        [0, 13], [13, 14], [14, 15], [15, 16],
+        [0, 17], [17, 18], [18, 19], [19, 20],
+        [5, 9], [9, 13], [13, 17]
+      ];
+
+      canvasCtx.strokeStyle = '#00FF00';
+      canvasCtx.lineWidth = 3;
+
+      connections.forEach(([start, end]) => {
+        const startPoint = landmarks[start];
+        const endPoint = landmarks[end];
+
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
+        canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
+        canvasCtx.stroke();
+      });
+
+      landmarks.forEach((landmark: any, index: number) => {
+        const x = landmark.x * canvasElement.width;
+        const y = landmark.y * canvasElement.height;
+
+        canvasCtx.beginPath();
+        canvasCtx.arc(x, y, fingerTips.includes(index) ? 8 : 5, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = fingerTips.includes(index) ? '#FF0000' : '#00FF00';
+        canvasCtx.fill();
+        canvasCtx.strokeStyle = 'white';
+        canvasCtx.lineWidth = 2;
+        canvasCtx.stroke();
+      });
+    };
+
+    const onResults = (results: any) => {
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+
+        // Analizar dedos
+        this.fingerStates.thumb = isFingerExtended(landmarks, 0);
+        this.fingerStates.index = isFingerExtended(landmarks, 1);
+        this.fingerStates.middle = isFingerExtended(landmarks, 2);
+        this.fingerStates.ring = isFingerExtended(landmarks, 3);
+        this.fingerStates.pinky = isFingerExtended(landmarks, 4);
+
+        // Detectar puño cerrado
+        const extendedCount = Object.values(this.fingerStates).filter(x => x).length;
+        this.isFistClosed = extendedCount === 0;
+
+        // Actualizar texto del estado
+        if (extendedCount === 0) {
+          this.handStateText = '✊ PUÑO CERRADO';
+        } else if (extendedCount === 5) {
+          this.handStateText = '🖐️ MANO ABIERTA';
+        } else if (extendedCount === 1 && this.fingerStates.index) {
+          this.handStateText = '☝️ ÍNDICE';
+        } else if (extendedCount === 2 && this.fingerStates.index && this.fingerStates.middle) {
+          this.handStateText = '✌️ VICTORIA';
+        } else {
+          this.handStateText = `${extendedCount} dedos extendidos`;
+        }
+
+        drawHand(landmarks);
+      } else {
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        this.handStateText = 'No se detecta mano';
+        this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
+        this.isFistClosed = false;
+      }
+    };
+
+    const hands = new window.Hands({
+      locateFile: (file: string) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      }
     });
 
-    landmarks.forEach((landmark: any) => {
-      ctx.beginPath();
-      ctx.arc(landmark.x * width, landmark.y * height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = '#FF0000';
-      ctx.fill();
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
     });
-  }
 
-  detectFingerStates(landmarks: any[]): void {
-    this.fingerStates.thumb = landmarks[4].y > landmarks[3].y;
-    this.fingerStates.index = landmarks[8].y > landmarks[6].y;
-    this.fingerStates.middle = landmarks[12].y > landmarks[10].y;
-    this.fingerStates.ring = landmarks[16].y > landmarks[14].y;
-    this.fingerStates.pinky = landmarks[20].y > landmarks[18].y;
-    this.isFistClosed = Object.values(this.fingerStates).every(state => state);
-  }
+    hands.onResults(onResults);
 
-  stopCamera(): void {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
-    }
-    if (this.camera) {
-      this.camera.stop();
-    }
-    this.cameraActive = false;
+    const camera = new window.Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({ image: videoElement });
+      },
+      width: 640,
+      height: 480
+    });
+
+    camera.start().then(() => {
+      console.log('Cámara iniciada');
+      this.isLoading = false;
+      this.cameraActive = true;
+    }).catch((error: any) => {
+      console.error('Error al iniciar cámara:', error);
+      this.isLoading = false;
+    });
   }
 
   finishLab(): void {
-    this.stopCamera();
     this.showQuiz = true;
   }
 
@@ -403,23 +300,5 @@ export class Myolab implements OnInit, OnDestroy {
 
   goToHome(): void {
     window.location.href = '/';
-  }
-
-  retryCamera(): void {
-    this.errorMessage = '';
-    this.isLoading = true;
-    this.initializeLab();
-  }
-
-  getErrorMessage(error: any): string {
-    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-      return 'Permiso denegado. Por favor, permite el acceso a la cámara en tu navegador.';
-    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
-      return 'No se encontró ninguna cámara en tu dispositivo.';
-    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-      return 'La cámara está siendo usada por otra aplicación. Cierra otras aplicaciones que puedan estar usando la cámara.';
-    } else {
-      return 'Error al iniciar la cámara: ' + error.message;
-    }
   }
 }

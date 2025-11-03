@@ -1,39 +1,14 @@
 <div class="lab-container">
   
   <!-- Pantalla de carga -->
-  <div *ngIf="isLoading && !errorMessage" class="loading-screen">
+  <div *ngIf="isLoading" class="loading-screen">
     <div class="spinner"></div>
-    <h2>Iniciando Laboratorio de Prótesis Mioeléctrica</h2>
-    <p>Solicitando acceso a la cámara...</p>
-    <p class="hint">Por favor, permite el acceso cuando tu navegador lo solicite</p>
-  </div>
-
-  <!-- Pantalla de error -->
-  <div *ngIf="errorMessage" class="error-screen">
-    <div class="error-icon">⚠️</div>
-    <h2>Error al Iniciar el Laboratorio</h2>
-    <p class="error-message">{{ errorMessage }}</p>
-    <div class="error-actions">
-      <button class="btn btn-primary" (click)="retryCamera()">
-        🔄 Intentar de Nuevo
-      </button>
-      <button class="btn btn-outline" (click)="goToHome()">
-        ← Volver al Inicio
-      </button>
-    </div>
-    <div class="error-help">
-      <h3>Posibles soluciones:</h3>
-      <ul>
-        <li>Asegúrate de hacer clic en "Permitir" cuando aparezca la solicitud de permisos</li>
-        <li>Verifica que ninguna otra aplicación esté usando la cámara</li>
-        <li>Revisa los permisos de la cámara en la configuración de tu navegador</li>
-        <li>Recarga la página (Ctrl/Cmd + R) e intenta nuevamente</li>
-      </ul>
-    </div>
+    <h2>Cargando modelo de detección...</h2>
+    <p>Iniciando cámara y sistema de reconocimiento de manos</p>
   </div>
 
   <!-- Laboratorio activo -->
-  <div *ngIf="cameraActive && !showQuiz" class="lab-active">
+  <div *ngIf="!isLoading && !showQuiz" class="lab-active">
     
     <!-- Barra superior -->
     <div class="lab-header">
@@ -54,15 +29,13 @@
       <!-- Video y Canvas -->
       <div class="video-section">
         <div class="video-container">
-          <video #videoElement autoplay playsinline muted></video>
-          <canvas #canvasElement class="detection-canvas"></canvas>
+          <h3>Cámara en Vivo</h3>
+          <video id="videoElement" width="640" height="480" autoplay></video>
         </div>
         
-        <div class="video-info">
-          <p>
-            <span class="info-icon">💡</span>
-            Mueve tu mano frente a la cámara. El sistema detectará cada dedo automáticamente.
-          </p>
+        <div class="canvas-container">
+          <h3>Detección de Mano</h3>
+          <canvas id="handCanvas" width="640" height="480"></canvas>
         </div>
       </div>
 
@@ -70,50 +43,8 @@
       <div class="control-panel">
         <h3>Estado de la Mano Detectada</h3>
         
-        <div class="hand-visualization">
-          <!-- Representación visual de la mano -->
-          <div class="virtual-hand">
-            <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
-              <!-- Palma -->
-              <rect x="50" y="150" width="100" height="120" rx="15" 
-                    class="palm" [class.active]="true"/>
-              
-              <!-- Pulgar -->
-              <g class="finger thumb" [class.contracted]="fingerStates.thumb">
-                <rect x="30" y="160" width="30" height="60" rx="15"/>
-                <circle cx="45" cy="155" r="12"/>
-              </g>
-              
-              <!-- Índice -->
-              <g class="finger index" [class.contracted]="fingerStates.index">
-                <rect x="60" y="80" width="25" height="80" rx="12"/>
-                <circle cx="72.5" cy="75" r="10"/>
-              </g>
-              
-              <!-- Medio -->
-              <g class="finger middle" [class.contracted]="fingerStates.middle">
-                <rect x="90" y="60" width="25" height="100" rx="12"/>
-                <circle cx="102.5" cy="55" r="10"/>
-              </g>
-              
-              <!-- Anular -->
-              <g class="finger ring" [class.contracted]="fingerStates.ring">
-                <rect x="120" y="80" width="25" height="80" rx="12"/>
-                <circle cx="132.5" cy="75" r="10"/>
-              </g>
-              
-              <!-- Meñique -->
-              <g class="finger pinky" [class.contracted]="fingerStates.pinky">
-                <rect x="150" y="100" width="20" height="60" rx="10"/>
-                <circle cx="160" cy="95" r="8"/>
-              </g>
-            </svg>
-          </div>
-
-          <div class="fist-indicator" [class.active]="isFistClosed">
-            <span class="fist-icon">✊</span>
-            <span class="fist-text">{{ isFistClosed ? '¡Puño Cerrado!' : 'Puño Abierto' }}</span>
-          </div>
+        <div class="hand-state-display">
+          <div class="hand-state-text">{{ handStateText }}</div>
         </div>
 
         <div class="finger-status">
@@ -122,29 +53,39 @@
             <div class="status-item" [class.active]="fingerStates.thumb">
               <span class="status-icon">👍</span>
               <span>Pulgar</span>
-              <span class="status-badge">{{ fingerStates.thumb ? 'Contraído' : 'Extendido' }}</span>
+              <span class="status-badge">{{ fingerStates.thumb ? 'Extendido' : 'Doblado' }}</span>
             </div>
             <div class="status-item" [class.active]="fingerStates.index">
               <span class="status-icon">☝️</span>
               <span>Índice</span>
-              <span class="status-badge">{{ fingerStates.index ? 'Contraído' : 'Extendido' }}</span>
+              <span class="status-badge">{{ fingerStates.index ? 'Extendido' : 'Doblado' }}</span>
             </div>
             <div class="status-item" [class.active]="fingerStates.middle">
               <span class="status-icon">🖕</span>
               <span>Medio</span>
-              <span class="status-badge">{{ fingerStates.middle ? 'Contraído' : 'Extendido' }}</span>
+              <span class="status-badge">{{ fingerStates.middle ? 'Extendido' : 'Doblado' }}</span>
             </div>
             <div class="status-item" [class.active]="fingerStates.ring">
               <span class="status-icon">💍</span>
               <span>Anular</span>
-              <span class="status-badge">{{ fingerStates.ring ? 'Contraído' : 'Extendido' }}</span>
+              <span class="status-badge">{{ fingerStates.ring ? 'Extendido' : 'Doblado' }}</span>
             </div>
             <div class="status-item" [class.active]="fingerStates.pinky">
               <span class="status-icon">🤙</span>
               <span>Meñique</span>
-              <span class="status-badge">{{ fingerStates.pinky ? 'Contraído' : 'Extendido' }}</span>
+              <span class="status-badge">{{ fingerStates.pinky ? 'Extendido' : 'Doblado' }}</span>
             </div>
           </div>
+        </div>
+
+        <div class="info-box">
+          <h4>💡 Instrucciones</h4>
+          <ul>
+            <li>Mueve tu mano frente a la cámara</li>
+            <li>Prueba diferentes gestos</li>
+            <li>Observa cómo se detecta cada dedo</li>
+            <li>Experimenta cerrando el puño</li>
+          </ul>
         </div>
 
         <div class="connection-status">
@@ -153,8 +94,8 @@
             <span>Servidor: Simulado</span>
           </div>
           <div class="status-indicator">
-            <span class="dot connected"></span>
-            <span>Cámara: Activa</span>
+            <span class="dot" [class.connected]="cameraActive"></span>
+            <span>Cámara: {{ cameraActive ? 'Activa' : 'Inactiva' }}</span>
           </div>
         </div>
       </div>

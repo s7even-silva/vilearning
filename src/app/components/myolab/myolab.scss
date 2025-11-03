@@ -205,15 +205,24 @@ $transition: all 0.3s ease;
   max-width: 1600px;
   margin: 0 auto;
 
-  h2 {
-    font-size: 1.5rem;
-    color: $dark-color;
+  .lab-info {
+    h2 {
+      font-size: 1.5rem;
+      color: $dark-color;
+      margin: 0;
+    }
+
+    .lab-subtitle {
+      font-size: 0.9rem;
+      color: $text-light;
+      margin: 0.25rem 0 0 0;
+    }
   }
 }
 
 .lab-workspace {
-  display: grid;
-  grid-template-columns: 1fr 400px;
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
   padding: 2rem;
   max-width: 1600px;
@@ -223,47 +232,37 @@ $transition: all 0.3s ease;
 
 // Sección de video
 .video-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  
+  h3 {
+    color: $dark-color;
+    font-size: 1.2rem;
+    margin: 0 0 1rem 0;
+  }
 }
 
-.video-container {
-  position: relative;
-  background: $dark-color;
+.video-container, .canvas-container {
+  background: $white;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-
-  video {
-    display: none; // Ocultamos el video, usamos solo el canvas
-  }
-
-  .detection-canvas {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.video-info {
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+#videoElement {
+  width: 100%;
+  height: auto;
   border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  background: $dark-color;
+  transform: scaleX(-1);
+}
 
-  .info-icon {
-    font-size: 1.5rem;
-  }
-
-  p {
-    margin: 0;
-    color: #856404;
-    font-size: 0.95rem;
-  }
+#handCanvas {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: $light-bg;
 }
 
 // Panel de control
