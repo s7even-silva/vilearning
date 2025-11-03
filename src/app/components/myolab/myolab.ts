@@ -1,304 +1,229 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, NgZone, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterOutlet } from '@angular/router';
+import { Observable, Subject } from 'rxjs';
+import { WebcamImage, WebcamModule } from 'ngx-webcam';
 
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-}
-
-interface FingerState {
-  thumb: boolean;
-  index: boolean;
-  middle: boolean;
-  ring: boolean;
-  pinky: boolean;
-}
-
-declare global {
-  interface Window {
-    Hands: any;
-    Camera: any;
-  }
-}
+// MediaPipe imports
+import { Hands, HAND_CONNECTIONS, Results } from '@mediapipe/hands';
+import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
 
 @Component({
   selector: 'app-myolab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, RouterOutlet, WebcamModule],
   templateUrl: './myolab.html',
   styleUrls: ['./myolab.scss']
 })
-export class Myolab implements OnInit, OnDestroy {
-  // Estados del laboratorio
-  isLoading = true;
-  cameraActive = false;
-  
-  // Estados de la mano
-  fingerStates: FingerState = {
-    thumb: false,
-    index: false,
-    middle: false,
-    ring: false,
-    pinky: false
-  };
-  
-  isFistClosed = false;
-  handStateText = 'Esperando mano...';
+export class Myolab implements OnDestroy {
+  protected readonly title = signal('web-camera');
 
-  // Cuestionario
-  showQuiz = false;
-  currentQuestionIndex = 0;
-  userAnswers: (number | null)[] = [null, null, null];
-  quizCompleted = false;
-  score = 0;
+  premissionStatus: string = '';
+  camData: any = null;
+  captutedImage: any = '';           // la <img> que ya tenías
+  trigger: Subject<void> = new Subject();
 
-  questions: Question[] = [
-    {
-      id: 1,
-      question: '¿Qué son las prótesis mioeléctricas?',
-      options: [
-        'Prótesis mecánicas simples',
-        'Prótesis controladas por señales eléctricas de los músculos',
-        'Prótesis decorativas sin funcionalidad',
-        'Prótesis controladas por voz'
-      ],
-      correctAnswer: 1,
-      explanation: 'Las prótesis mioeléctricas utilizan señales eléctricas generadas por la contracción muscular (EMG) para controlar el movimiento de la prótesis.'
-    },
-    {
-      id: 2,
-      question: '¿Qué tecnología se utilizó en este laboratorio para detectar el movimiento de la mano?',
-      options: [
-        'Sensores táctiles',
-        'Visión por computadora e inteligencia artificial',
-        'Electromiografía directa',
-        'Control manual con botones'
-      ],
-      correctAnswer: 1,
-      explanation: 'En este laboratorio utilizamos visión por computadora con modelos de IA (MediaPipe) para detectar y rastrear los movimientos de la mano en tiempo real.'
-    },
-    {
-      id: 3,
-      question: '¿Cuál es la principal ventaja de usar visión por computadora en el control de prótesis?',
-      options: [
-        'Es más económico que otros métodos',
-        'Permite control sin contacto y puede capturar movimientos naturales',
-        'Es más preciso que los sensores EMG',
-        'No requiere calibración'
-      ],
-      correctAnswer: 1,
-      explanation: 'La visión por computadora permite capturar movimientos naturales sin necesidad de sensores físicos, aunque en prótesis reales se combinan ambas tecnologías para mejor precisión.'
-    }
-  ];
-
-  ngOnInit(): void {
-    console.log('Iniciando laboratorio...');
-    this.loadScriptsAndInitialize();
+  get $trigger(): Observable<void>{
+    return this.trigger.asObservable();
   }
 
-  ngOnDestroy(): void {
-    // Limpiar recursos si es necesario
+  // --- MediaPipe ---
+  private hands!: Hands;
+  private offscreenCanvas!: HTMLCanvasElement;
+  private offscreenCtx!: CanvasRenderingContext2D;
+
+  // Estado UI detectado
+  detectedHandness: string | null = null; // 'Right' | 'Left'
+  handOpen: boolean | null = null; // true: abierta, false: cerrada, null: sin detección
+  fingers = { thumb: false, index: false, middle: false, ring: false, pinky: false };
+
+  constructor(private ngZone: NgZone) {
+    this.initMediaPipe();
   }
 
-  loadScriptsAndInitialize(): void {
-    // Cargar scripts de MediaPipe
-    const drawingUtils = document.createElement('script');
-    drawingUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils';
-    document.head.appendChild(drawingUtils);
+  // Inicializa MediaPipe Hands (no usamos Camera de mediapipe porque usamos ngx-webcam)
+  private initMediaPipe() {
+    // crear canvas offscreen para dibujar y procesar
+    this.offscreenCanvas = document.createElement('canvas');
+    this.offscreenCtx = this.offscreenCanvas.getContext('2d')!;
 
-    const cameraUtils = document.createElement('script');
-    cameraUtils.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils';
-    document.head.appendChild(cameraUtils);
-
-    const handsScript = document.createElement('script');
-    handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands';
-    document.head.appendChild(handsScript);
-
-    // Esperar a que los scripts se carguen y luego inicializar
-    handsScript.onload = () => {
-      console.log('Scripts cargados');
-      setTimeout(() => this.initializeHandDetection(), 1000);
-    };
-  }
-
-  initializeHandDetection(): void {
-    const videoElement = document.getElementById('videoElement') as HTMLVideoElement;
-    const canvasElement = document.getElementById('handCanvas') as HTMLCanvasElement;
-    
-    if (!videoElement) {
-      console.error('No se encontró videoElement');
-      setTimeout(() => this.initializeHandDetection(), 500);
-      return;
-    }
-    if (!canvasElement) {
-      console.error('No se encontró canvas Element');
-      setTimeout(() => this.initializeHandDetection(), 500);
-      return;
-    }
-    const canvasCtx = canvasElement.getContext('2d')!;
-
-    const fingerTips = [4, 8, 12, 16, 20];
-    const fingerPips = [3, 6, 10, 14, 18];
-
-    const isFingerExtended = (landmarks: any[], fingerIndex: number): boolean => {
-      const tipIndex = fingerTips[fingerIndex];
-      const pipIndex = fingerPips[fingerIndex];
-
-      if (fingerIndex === 0) { // Pulgar
-        return landmarks[tipIndex].x < landmarks[pipIndex].x;
-      } else {
-        return landmarks[tipIndex].y < landmarks[pipIndex].y;
-      }
-    };
-
-    const drawHand = (landmarks: any[]) => {
-      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-
-      const connections = [
-        [0, 1], [1, 2], [2, 3], [3, 4],
-        [0, 5], [5, 6], [6, 7], [7, 8],
-        [0, 9], [9, 10], [10, 11], [11, 12],
-        [0, 13], [13, 14], [14, 15], [15, 16],
-        [0, 17], [17, 18], [18, 19], [19, 20],
-        [5, 9], [9, 13], [13, 17]
-      ];
-
-      canvasCtx.strokeStyle = '#00FF00';
-      canvasCtx.lineWidth = 3;
-
-      connections.forEach(([start, end]) => {
-        const startPoint = landmarks[start];
-        const endPoint = landmarks[end];
-
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(startPoint.x * canvasElement.width, startPoint.y * canvasElement.height);
-        canvasCtx.lineTo(endPoint.x * canvasElement.width, endPoint.y * canvasElement.height);
-        canvasCtx.stroke();
-      });
-
-      landmarks.forEach((landmark: any, index: number) => {
-        const x = landmark.x * canvasElement.width;
-        const y = landmark.y * canvasElement.height;
-
-        canvasCtx.beginPath();
-        canvasCtx.arc(x, y, fingerTips.includes(index) ? 8 : 5, 0, 2 * Math.PI);
-        canvasCtx.fillStyle = fingerTips.includes(index) ? '#FF0000' : '#00FF00';
-        canvasCtx.fill();
-        canvasCtx.strokeStyle = 'white';
-        canvasCtx.lineWidth = 2;
-        canvasCtx.stroke();
-      });
-    };
-
-    const onResults = (results: any) => {
-      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        const landmarks = results.multiHandLandmarks[0];
-
-        // Analizar dedos
-        this.fingerStates.thumb = isFingerExtended(landmarks, 0);
-        this.fingerStates.index = isFingerExtended(landmarks, 1);
-        this.fingerStates.middle = isFingerExtended(landmarks, 2);
-        this.fingerStates.ring = isFingerExtended(landmarks, 3);
-        this.fingerStates.pinky = isFingerExtended(landmarks, 4);
-
-        // Detectar puño cerrado
-        const extendedCount = Object.values(this.fingerStates).filter(x => x).length;
-        this.isFistClosed = extendedCount === 0;
-
-        // Actualizar texto del estado
-        if (extendedCount === 0) {
-          this.handStateText = '✊ PUÑO CERRADO';
-        } else if (extendedCount === 5) {
-          this.handStateText = '🖐️ MANO ABIERTA';
-        } else if (extendedCount === 1 && this.fingerStates.index) {
-          this.handStateText = '☝️ ÍNDICE';
-        } else if (extendedCount === 2 && this.fingerStates.index && this.fingerStates.middle) {
-          this.handStateText = '✌️ VICTORIA';
-        } else {
-          this.handStateText = `${extendedCount} dedos extendidos`;
-        }
-
-        drawHand(landmarks);
-      } else {
-        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-        this.handStateText = 'No se detecta mano';
-        this.fingerStates = { thumb: false, index: false, middle: false, ring: false, pinky: false };
-        this.isFistClosed = false;
-      }
-    };
-
-    const hands = new window.Hands({
-      locateFile: (file: string) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-      }
+    this.hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
-    hands.setOptions({
-      maxNumHands: 1,
+    this.hands.setOptions({
       modelComplexity: 1,
-      minDetectionConfidence: 0.5,
+      maxNumHands: 1,
+      minDetectionConfidence: 0.6,
       minTrackingConfidence: 0.5
     });
 
-    hands.onResults(onResults);
-
-    const camera = new window.Camera(videoElement, {
-      onFrame: async () => {
-        await hands.send({ image: videoElement });
-      },
-      width: 640,
-      height: 480
-    });
-
-    camera.start().then(() => {
-      console.log('Cámara iniciada');
-      this.isLoading = false;
-      this.cameraActive = true;
-    }).catch((error: any) => {
-      console.error('Error al iniciar cámara:', error);
-      this.isLoading = false;
+    // onResults se ejecuta cuando MediaPipe termina con la imagen
+    this.hands.onResults((results: Results) => {
+      // actualizar estado y la imagen resultante EN EL ANGULAR ZONE
+      this.ngZone.run(() => this.handleResults(results));
     });
   }
 
-  finishLab(): void {
-    this.showQuiz = true;
+  // Método original que pide permiso y guarda stream (lo dejamos igual)
+  checkPremission(){
+    navigator.mediaDevices.getUserMedia({video:{width:500,height:500}}).then((response)=>{
+      this.premissionStatus = 'Allowed';
+      this.camData = response;
+      console.log(this.camData);
+      console.log(this.premissionStatus);
+    }).catch(err=>{
+      this.premissionStatus = 'Not Allowed';
+      console.log(this.premissionStatus);
+    })
   }
 
-  selectAnswer(questionIndex: number, answerIndex: number): void {
-    this.userAnswers[questionIndex] = answerIndex;
-  }
+  // Cuando ngx-webcam emite la imagen (WebcamImage), la procesamos con MediaPipe
+  capture(event: WebcamImage){
+    // mostramos la imagen cruda primero (como antes)
+    this.captutedImage = event.imageAsDataUrl;
 
-  nextQuestion(): void {
-    if (this.currentQuestionIndex < this.questions.length - 1) {
-      this.currentQuestionIndex++;
-    }
-  }
+    const img = new Image();
+    img.src = event.imageAsDataUrl;
 
-  previousQuestion(): void {
-    if (this.currentQuestionIndex > 0) {
-      this.currentQuestionIndex--;
-    }
-  }
+    img.onload = async () => {
+      // ajustar canvas offscreen al tamaño real de la imagen
+      this.offscreenCanvas.width = img.width;
+      this.offscreenCanvas.height = img.height;
 
-  submitQuiz(): void {
-    this.score = 0;
-    this.userAnswers.forEach((answer, index) => {
-      if (answer === this.questions[index].correctAnswer) {
-        this.score++;
+      // dibujar la imagen original en el canvas (base para dibujo de landmarks)
+      this.offscreenCtx.clearRect(0, 0, img.width, img.height);
+      this.offscreenCtx.drawImage(img, 0, 0, img.width, img.height);
+
+      // enviar la imagen a MediaPipe
+      try {
+        await this.hands.send({ image: img });
+        // nota: el resultado llegará asíncronamente a handleResults
+      } catch (err) {
+        console.error('Error enviando la imagen a MediaPipe Hands:', err);
       }
-    });
-    this.quizCompleted = true;
+    };
+
+    img.onerror = (err) => {
+      console.error('Error cargando imagen desde dataURL', err);
+    };
   }
 
-  restartLab(): void {
-    window.location.reload();
+  // Método que dispara ngx-webcam a través del Subject (igual que antes)
+  captureImage(){
+    this.trigger.next();
   }
 
-  goToHome(): void {
-    window.location.href = '/';
+  // Procesa los resultados de MediaPipe, dibuja sobre el offscreen canvas y actualiza estados
+  private handleResults(results: Results) {
+    // limpiar canvas (ya tiene la imagen base dibujada en capture), pero por seguridad la refrescamos:
+    // Si results.image está disponible, dibujarla; en nuestro flujo usamos la imagen del offscreen
+    // Simplemente dejamos ahí lo que ya puso capture() y agregamos overlays.
+    // Limpiar solo las anotaciones (re-dibujar la imagen base):
+    // Para mantener simplicidad, asumimos que offscreen ya contiene la imagen; si no lo hiciera,
+    // podríamos volver a dibujarla desde results.image (si existe).
+    const w = this.offscreenCanvas.width;
+    const h = this.offscreenCanvas.height;
+    // redibuja la imagen base (no siempre necesario porque ya dibujamos antes de enviar)
+    // this.offscreenCtx.drawImage(...)
+
+    // dibujar landmarks si hay manos
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      // toma la primera mano
+      const landmarks = results.multiHandLandmarks[0];
+      // dibujar conexiones y puntos
+      drawConnectors(this.offscreenCtx, landmarks, HAND_CONNECTIONS);
+      drawLandmarks(this.offscreenCtx, landmarks, { radius: 4 });
+
+      // obtener handedness si existe
+      const handedness = results.multiHandedness && results.multiHandedness[0] && results.multiHandedness[0].label
+        ? results.multiHandedness[0].label
+        : null;
+
+      // clasificar dedos (devuelve objeto con booleans)
+      const fingerStates = this.classifyFingers(landmarks, handedness);
+      const openCount = Object.values(fingerStates).filter(v => v).length;
+
+      // actualizar UI state
+      this.detectedHandness = handedness;
+      this.fingers = fingerStates;
+      this.handOpen = openCount >= 4;
+
+    } else {
+      // no detectada
+      this.detectedHandness = null;
+      this.fingers = { thumb: false, index: false, middle: false, ring: false, pinky: false };
+      this.handOpen = null;
+    }
+
+    // actualizar la imagen que muestra tu <img> con el canvas anotado
+    try {
+      this.captutedImage = this.offscreenCanvas.toDataURL('image/png');
+    } catch (err) {
+      console.error('Error generando dataURL del canvas', err);
+    }
+  }
+
+  /**
+   * classifyFingers:
+   * - landmarks: array de 21 puntos normalizados {x,y,z} (x,y en 0..1)
+   * - handedness: "Right" | "Left" | null
+   * Regresa true cuando el dedo está extendido.
+   */
+  private classifyFingers(landmarks: Array<{x:number,y:number,z:number}>, handedness: string | null) {
+    if (!landmarks || landmarks.length < 21) {
+      return { thumb: false, index: false, middle: false, ring: false, pinky: false };
+    }
+
+    // Helper: para índices/medio/anular/meñique comparamos tip.y con pip.y
+    const isFingerExtended = (tipIdx: number, pipIdx: number) => {
+      const tip = landmarks[tipIdx];
+      const pip = landmarks[pipIdx];
+      if (!tip || !pip) return false;
+      // ojo: y aumenta hacia abajo en la imagen, por eso tip.y < pip.y => dedo hacia arriba (extendido)
+      return tip.y < pip.y;
+    };
+
+    // Pulgar: heurística en el eje X, depende de la mano
+    const thumbTip = landmarks[4];
+    const thumbMcp = landmarks[2]; // usar MCP o CMC según prefieras
+    let thumbExtended = false;
+    if (thumbTip && thumbMcp) {
+      if (handedness === 'Right') {
+        // para mano derecha, pulgar "hacia la izquierda" en la imagen suele tener tip.x < mcp.x
+        thumbExtended = thumbTip.x < thumbMcp.x;
+      } else if (handedness === 'Left') {
+        thumbExtended = thumbTip.x > thumbMcp.x;
+      } else {
+        // sin handedness, usar comparación con índice (5)
+        const indexMcp = landmarks[5];
+        if (indexMcp) {
+          // si la punta del pulgar está separada hacia un lado respecto al índice
+          thumbExtended = Math.abs(thumbTip.x - indexMcp.x) > 0.05 && Math.abs(thumbTip.x - thumbMcp.x) > 0.01 && (thumbTip.x < indexMcp.x);
+        } else {
+          thumbExtended = false;
+        }
+      }
+    }
+
+    const indexExtended = isFingerExtended(8, 6);
+    const middleExtended = isFingerExtended(12, 10);
+    const ringExtended = isFingerExtended(16, 14);
+    const pinkyExtended = isFingerExtended(20, 18);
+
+    return {
+      thumb: !!thumbExtended,
+      index: !!indexExtended,
+      middle: !!middleExtended,
+      ring: !!ringExtended,
+      pinky: !!pinkyExtended
+    };
+  }
+
+  // cleanup
+  ngOnDestroy(): void {
+    try {
+      this.hands?.close?.();
+    } catch (e) { /* ignore */ }
   }
 }
