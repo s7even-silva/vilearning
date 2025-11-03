@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { Home } from './components/home/home';
 import { Layout } from './components/layout/layout';
 import { Courses } from './components/courses/courses';
-import { Myolab } from './myolab/myolab';
+import { Myolab } from './components/myolab/myolab';
 
 export const routes: Routes = [
     {

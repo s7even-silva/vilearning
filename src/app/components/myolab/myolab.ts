@@ -33,7 +33,7 @@ declare global {
   styleUrls: ['./myolab.scss']
 })
 export class Myolab implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('videoElement') videoElement!: ElementRef<HTMLVideoElement>;
+  @ViewChild('videoElement', {static: false}) videoElement!: ElementRef<HTMLVideoElement>;
   @ViewChild('canvasElement') canvasElement!: ElementRef<HTMLCanvasElement>;
 
   // Estados del laboratorio
@@ -109,6 +109,9 @@ export class Myolab implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    console.log('VideoElement en AfterViewInit: ', this.videoElement);
+    // luego llamar a startCamera si lo deseas
+    this.startCamera();
     // Los elementos ya están disponibles aquí
   }
 
