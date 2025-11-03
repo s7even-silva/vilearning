@@ -1,0 +1,277 @@
+<!-- Página completa sin header ni footer del layout -->
+<div class="lab-container">
+  
+  <!-- Pantalla de inicio -->
+  <div *ngIf="!labStarted && !showQuiz" class="welcome-screen">
+    <div class="welcome-content">
+      <div class="lab-icon">🦾</div>
+      <h1 class="lab-title">Laboratorio de Prótesis Mioeléctrica</h1>
+      <p class="lab-instructor">Instructor: Ing. Frank Marcos</p>
+      
+      <div class="lab-description">
+        <h2>Sobre este laboratorio</h2>
+        <p>
+          En este laboratorio aprenderás cómo funcionan las prótesis mioeléctricas 
+          experimentando con control basado en visión por computadora. Utilizarás tu 
+          cámara para controlar una mano virtual en tiempo real.
+        </p>
+        
+        <h3>¿Qué harás?</h3>
+        <ul>
+          <li>Activar tu cámara para capturar movimientos de tu mano</li>
+          <li>Experimentar con detección de gestos usando IA</li>
+          <li>Observar cómo cada dedo es detectado individualmente</li>
+          <li>Ver la detección de puño cerrado</li>
+          <li>Completar un cuestionario final</li>
+        </ul>
+
+        <div class="lab-requirements">
+          <h3>Requisitos:</h3>
+          <ul>
+            <li>✓ Cámara web funcional</li>
+            <li>✓ Permisos de cámara habilitados</li>
+            <li>✓ Buena iluminación</li>
+            <li>✓ Conexión a internet estable</li>
+          </ul>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-large" (click)="startLab()">
+        Comenzar Laboratorio
+      </button>
+      <button class="btn btn-outline" (click)="goToHome()">
+        Volver al inicio
+      </button>
+    </div>
+  </div>
+
+  <!-- Pantalla de conexión -->
+  <div *ngIf="isConnecting" class="connecting-screen">
+    <div class="spinner"></div>
+    <p>Conectando con el servidor...</p>
+  </div>
+
+  <!-- Laboratorio activo -->
+  <div *ngIf="labStarted && cameraActive && !showQuiz" class="lab-active">
+    
+    <!-- Barra superior -->
+    <div class="lab-header">
+      <div class="lab-header-content">
+        <h2>🦾 Laboratorio de Prótesis Mioeléctrica</h2>
+        <button class="btn btn-danger" (click)="finishLab()">
+          Finalizar Laboratorio
+        </button>
+      </div>
+    </div>
+
+    <!-- Área principal -->
+    <div class="lab-workspace">
+      
+      <!-- Video y Canvas -->
+      <div class="video-section">
+        <div class="video-container">
+          <video #videoElement autoplay playsinline muted></video>
+          <canvas #canvasElement class="detection-canvas"></canvas>
+        </div>
+        
+        <div class="video-info">
+          <p>
+            <span class="info-icon">💡</span>
+            Mueve tu mano frente a la cámara. El sistema detectará cada dedo automáticamente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Panel de control -->
+      <div class="control-panel">
+        <h3>Estado de la Mano Detectada</h3>
+        
+        <div class="hand-visualization">
+          <!-- Representación visual de la mano -->
+          <div class="virtual-hand">
+            <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+              <!-- Palma -->
+              <rect x="50" y="150" width="100" height="120" rx="15" 
+                    class="palm" [class.active]="true"/>
+              
+              <!-- Pulgar -->
+              <g class="finger thumb" [class.contracted]="fingerStates.thumb">
+                <rect x="30" y="160" width="30" height="60" rx="15"/>
+                <circle cx="45" cy="155" r="12"/>
+              </g>
+              
+              <!-- Índice -->
+              <g class="finger index" [class.contracted]="fingerStates.index">
+                <rect x="60" y="80" width="25" height="80" rx="12"/>
+                <circle cx="72.5" cy="75" r="10"/>
+              </g>
+              
+              <!-- Medio -->
+              <g class="finger middle" [class.contracted]="fingerStates.middle">
+                <rect x="90" y="60" width="25" height="100" rx="12"/>
+                <circle cx="102.5" cy="55" r="10"/>
+              </g>
+              
+              <!-- Anular -->
+              <g class="finger ring" [class.contracted]="fingerStates.ring">
+                <rect x="120" y="80" width="25" height="80" rx="12"/>
+                <circle cx="132.5" cy="75" r="10"/>
+              </g>
+              
+              <!-- Meñique -->
+              <g class="finger pinky" [class.contracted]="fingerStates.pinky">
+                <rect x="150" y="100" width="20" height="60" rx="10"/>
+                <circle cx="160" cy="95" r="8"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="fist-indicator" [class.active]="isFistClosed">
+            <span class="fist-icon">✊</span>
+            <span class="fist-text">{{ isFistClosed ? '¡Puño Cerrado!' : 'Puño Abierto' }}</span>
+          </div>
+        </div>
+
+        <div class="finger-status">
+          <h4>Estado de cada dedo:</h4>
+          <div class="status-list">
+            <div class="status-item" [class.active]="fingerStates.thumb">
+              <span class="status-icon">👍</span>
+              <span>Pulgar</span>
+              <span class="status-badge">{{ fingerStates.thumb ? 'Contraído' : 'Extendido' }}</span>
+            </div>
+            <div class="status-item" [class.active]="fingerStates.index">
+              <span class="status-icon">☝️</span>
+              <span>Índice</span>
+              <span class="status-badge">{{ fingerStates.index ? 'Contraído' : 'Extendido' }}</span>
+            </div>
+            <div class="status-item" [class.active]="fingerStates.middle">
+              <span class="status-icon">🖕</span>
+              <span>Medio</span>
+              <span class="status-badge">{{ fingerStates.middle ? 'Contraído' : 'Extendido' }}</span>
+            </div>
+            <div class="status-item" [class.active]="fingerStates.ring">
+              <span class="status-icon">💍</span>
+              <span>Anular</span>
+              <span class="status-badge">{{ fingerStates.ring ? 'Contraído' : 'Extendido' }}</span>
+            </div>
+            <div class="status-item" [class.active]="fingerStates.pinky">
+              <span class="status-icon">🤙</span>
+              <span>Meñique</span>
+              <span class="status-badge">{{ fingerStates.pinky ? 'Contraído' : 'Extendido' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="connection-status">
+          <div class="status-indicator">
+            <span class="dot connected"></span>
+            <span>Servidor: Simulado</span>
+          </div>
+          <div class="status-indicator">
+            <span class="dot connected"></span>
+            <span>Cámara: Activa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cuestionario -->
+  <div *ngIf="showQuiz" class="quiz-container">
+    <div class="quiz-content">
+      
+      <!-- Resultados -->
+      <div *ngIf="quizCompleted" class="quiz-results">
+        <div class="result-icon">{{ score === 3 ? '🎉' : score >= 2 ? '👍' : '📚' }}</div>
+        <h2>¡Cuestionario Completado!</h2>
+        <div class="score-display">
+          <span class="score">{{ score }}</span>
+          <span class="total">/ {{ questions.length }}</span>
+        </div>
+        <p class="score-message">
+          {{ score === 3 ? '¡Perfecto! Has demostrado un excelente entendimiento del laboratorio.' :
+             score >= 2 ? '¡Buen trabajo! Has comprendido los conceptos principales.' :
+             'Te recomendamos revisar el material del laboratorio nuevamente.' }}
+        </p>
+
+        <!-- Revisión de respuestas -->
+        <div class="answers-review">
+          <h3>Revisión de Respuestas</h3>
+          <div *ngFor="let question of questions; let i = index" class="review-item">
+            <h4>{{ i + 1 }}. {{ question.question }}</h4>
+            <div class="review-answer" 
+                 [class.correct]="userAnswers[i] === question.correctAnswer"
+                 [class.incorrect]="userAnswers[i] !== question.correctAnswer">
+              <p><strong>Tu respuesta:</strong> {{ question.options[userAnswers[i] || 0] }}</p>
+              <p *ngIf="userAnswers[i] !== question.correctAnswer">
+                <strong>Respuesta correcta:</strong> {{ question.options[question.correctAnswer] }}
+              </p>
+              <p class="explanation"><strong>Explicación:</strong> {{ question.explanation }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quiz-actions">
+          <button class="btn btn-primary" (click)="restartLab()">
+            Repetir Laboratorio
+          </button>
+          <button class="btn btn-outline" (click)="goToHome()">
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+
+      <!-- Preguntas -->
+      <div *ngIf="!quizCompleted" class="quiz-questions">
+        <h2>Cuestionario Final</h2>
+        <p class="quiz-instruction">Responde las siguientes preguntas sobre el laboratorio</p>
+
+        <div class="progress-bar">
+          <div class="progress" [style.width.%]="((currentQuestionIndex + 1) / questions.length) * 100"></div>
+        </div>
+
+        <div class="question-card">
+          <div class="question-header">
+            <span class="question-number">Pregunta {{ currentQuestionIndex + 1 }} de {{ questions.length }}</span>
+          </div>
+
+          <h3 class="question-text">{{ questions[currentQuestionIndex].question }}</h3>
+
+          <div class="options-list">
+            <div *ngFor="let option of questions[currentQuestionIndex].options; let i = index"
+                 class="option-item"
+                 [class.selected]="userAnswers[currentQuestionIndex] === i"
+                 (click)="selectAnswer(currentQuestionIndex, i)">
+              <span class="option-letter">{{ ['A', 'B', 'C', 'D'][i] }}</span>
+              <span class="option-text">{{ option }}</span>
+            </div>
+          </div>
+
+          <div class="question-navigation">
+            <button class="btn btn-outline" 
+                    (click)="previousQuestion()"
+                    [disabled]="currentQuestionIndex === 0">
+              ← Anterior
+            </button>
+            
+            <button *ngIf="currentQuestionIndex < questions.length - 1"
+                    class="btn btn-primary" 
+                    (click)="nextQuestion()"
+                    [disabled]="userAnswers[currentQuestionIndex] === null">
+              Siguiente →
+            </button>
+
+            <button *ngIf="currentQuestionIndex === questions.length - 1"
+                    class="btn btn-primary" 
+                    (click)="submitQuiz()"
+                    [disabled]="userAnswers.includes(null)">
+              Enviar Respuestas
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

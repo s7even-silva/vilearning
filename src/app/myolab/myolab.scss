@@ -1,0 +1,690 @@
+// Variables
+$primary-color: #c8102e;
+$success-color: #28a745;
+$danger-color: #dc3545;
+$dark-color: #222222;
+$light-bg: #f8f9fa;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$text-color: #333333;
+$text-light: #666666;
+$transition: all 0.3s ease;
+
+// Reset y estilos base
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Contenedor principal
+.lab-container {
+  min-height: 100vh;
+  background: $light-bg;
+}
+
+// Botones
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition;
+  font-size: 1rem;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &-primary {
+    background: $primary-color;
+    color: $white;
+
+    &:hover:not(:disabled) {
+      background: darken($primary-color, 10%);
+    }
+  }
+
+  &-outline {
+    background: transparent;
+    color: $text-color;
+    border: 2px solid $border-color;
+
+    &:hover:not(:disabled) {
+      background: $light-bg;
+      border-color: $primary-color;
+    }
+  }
+
+  &-danger {
+    background: $danger-color;
+    color: $white;
+
+    &:hover {
+      background: darken($danger-color, 10%);
+    }
+  }
+
+  &-large {
+    padding: 1rem 2.5rem;
+    font-size: 1.15rem;
+  }
+}
+
+// Pantalla de bienvenida
+.welcome-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.welcome-content {
+  max-width: 800px;
+  background: $white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.lab-icon {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+}
+
+.lab-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: $dark-color;
+  margin-bottom: 0.5rem;
+}
+
+.lab-instructor {
+  font-size: 1.1rem;
+  color: $text-light;
+  margin-bottom: 2rem;
+}
+
+.lab-description {
+  text-align: left;
+  margin-bottom: 2.5rem;
+
+  h2, h3 {
+    color: $dark-color;
+    margin: 1.5rem 0 1rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  p {
+    color: $text-color;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+
+    li {
+      color: $text-color;
+      line-height: 1.8;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+.lab-requirements {
+  background: $light-bg;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+}
+
+// Pantalla de conexión
+.connecting-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+
+  p {
+    font-size: 1.25rem;
+    color: $text-light;
+  }
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid $light-bg;
+  border-top: 4px solid $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Laboratorio activo
+.lab-active {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-header {
+  background: $white;
+  border-bottom: 2px solid $border-color;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.lab-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1600px;
+  margin: 0 auto;
+
+  h2 {
+    font-size: 1.5rem;
+    color: $dark-color;
+  }
+}
+
+.lab-workspace {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+// Sección de video
+.video-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.video-container {
+  position: relative;
+  background: $dark-color;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  video {
+    display: none; // Ocultamos el video, usamos solo el canvas
+  }
+
+  .detection-canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+.video-info {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .info-icon {
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin: 0;
+    color: #856404;
+    font-size: 0.95rem;
+  }
+}
+
+// Panel de control
+.control-panel {
+  background: $white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  h3 {
+    color: $dark-color;
+    font-size: 1.3rem;
+    margin-bottom: 0;
+  }
+
+  h4 {
+    color: $dark-color;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+// Visualización de la mano
+.hand-visualization {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.virtual-hand {
+  width: 200px;
+  
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .palm {
+    fill: #f0f0f0;
+    stroke: #333;
+    stroke-width: 2;
+    transition: $transition;
+
+    &.active {
+      fill: #e0e0e0;
+    }
+  }
+
+  .finger {
+    fill: #f0f0f0;
+    stroke: #333;
+    stroke-width: 2;
+    transition: $transition;
+
+    &.contracted {
+      fill: $primary-color;
+      opacity: 0.8;
+    }
+  }
+}
+
+.fist-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: $light-bg;
+  border-radius: 8px;
+  transition: $transition;
+
+  &.active {
+    background: lighten($primary-color, 35%);
+    border: 2px solid $primary-color;
+  }
+
+  .fist-icon {
+    font-size: 2rem;
+  }
+
+  .fist-text {
+    font-weight: 600;
+    color: $text-color;
+  }
+}
+
+// Estado de dedos
+.finger-status {
+  .status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: $light-bg;
+    border-radius: 6px;
+    transition: $transition;
+
+    &.active {
+      background: lighten($primary-color, 35%);
+      border-left: 4px solid $primary-color;
+    }
+
+    .status-icon {
+      font-size: 1.5rem;
+    }
+
+    span:nth-child(2) {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      font-size: 0.85rem;
+      padding: 0.25rem 0.75rem;
+      background: $white;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+  }
+}
+
+// Estado de conexión
+.connection-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid $border-color;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: $text-light;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    
+    &.connected {
+      background: $success-color;
+      box-shadow: 0 0 8px $success-color;
+    }
+  }
+}
+
+// Cuestionario
+.quiz-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.quiz-content {
+  max-width: 800px;
+  width: 100%;
+  background: $white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+// Resultados del quiz
+.quiz-results {
+  text-align: center;
+
+  .result-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+    color: $dark-color;
+    margin-bottom: 1.5rem;
+  }
+
+  .score-display {
+    font-size: 3rem;
+    font-weight: 700;
+    color: $primary-color;
+    margin-bottom: 1rem;
+
+    .score {
+      font-size: 4rem;
+    }
+
+    .total {
+      color: $text-light;
+    }
+  }
+
+  .score-message {
+    font-size: 1.15rem;
+    color: $text-color;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+}
+
+.answers-review {
+  text-align: left;
+  margin: 2rem 0;
+
+  h3 {
+    font-size: 1.5rem;
+    color: $dark-color;
+    margin-bottom: 1.5rem;
+  }
+
+  .review-item {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid $border-color;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    h4 {
+      font-size: 1.1rem;
+      color: $dark-color;
+      margin-bottom: 1rem;
+    }
+  }
+
+  .review-answer {
+    padding: 1rem;
+    border-radius: 8px;
+    background: $light-bg;
+
+    &.correct {
+      background: lighten($success-color, 45%);
+      border-left: 4px solid $success-color;
+    }
+
+    &.incorrect {
+      background: lighten($danger-color, 35%);
+      border-left: 4px solid $danger-color;
+    }
+
+    p {
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .explanation {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      font-style: italic;
+      color: $text-light;
+    }
+  }
+}
+
+.quiz-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+// Preguntas del quiz
+.quiz-questions {
+  h2 {
+    font-size: 2rem;
+    color: $dark-color;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .quiz-instruction {
+    text-align: center;
+    color: $text-light;
+    margin-bottom: 2rem;
+  }
+}
+
+.progress-bar {
+  height: 8px;
+  background: $light-bg;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  overflow: hidden;
+
+  .progress {
+    height: 100%;
+    background: $primary-color;
+    transition: width 0.3s ease;
+  }
+}
+
+.question-card {
+  .question-header {
+    margin-bottom: 1.5rem;
+
+    .question-number {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: $light-bg;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: $text-color;
+    }
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+    color: $dark-color;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: $light-bg;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: $transition;
+
+  &:hover {
+    background: darken($light-bg, 3%);
+  }
+
+  &.selected {
+    background: lighten($primary-color, 35%);
+    border-color: $primary-color;
+  }
+
+  .option-letter {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $white;
+    border-radius: 50%;
+    font-weight: 700;
+    color: $primary-color;
+  }
+
+  .option-text {
+    flex: 1;
+    color: $text-color;
+    line-height: 1.5;
+  }
+}
+
+.question-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid $border-color;
+}
+
+// Responsive
+@media (max-width: 1200px) {
+  .lab-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome-content {
+    padding: 2rem;
+  }
+
+  .lab-title {
+    font-size: 1.75rem;
+  }
+
+  .lab-header-content {
+    flex-direction: column;
+    gap: 1rem;
+
+    h2 {
+      font-size: 1.2rem;
+    }
+  }
+
+  .quiz-content {
+    padding: 2rem;
+  }
+
+  .question-text {
+    font-size: 1.2rem;
+  }
+}

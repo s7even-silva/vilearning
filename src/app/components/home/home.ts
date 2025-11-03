@@ -1,17 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-interface Course {
-  id: number;
-  title: string;
-  instructor: string;
-  category: string;
-  level: string;
-  students: number;
-  image: string;
-  rating: number;
-}
+import { Router } from '@angular/router';
+import { CoursesService, Course } from '../../services/courses';
 
 interface Category {
   name: string;
@@ -26,7 +17,7 @@ interface Category {
   templateUrl: './home.html',
   styleUrls: ['./home.scss']
 })
-export class Home {
+export class Home implements OnInit {
   searchQuery: string = '';
   
   categories: Category[] = [
@@ -38,68 +29,7 @@ export class Home {
     { name: 'Artes', icon: '🎨', count: 98 }
   ];
 
-  featuredCourses: Course[] = [
-    {
-      id: 1,
-      title: 'Introducción a la Inteligencia Artificial',
-      instructor: 'Dr. María González',
-      category: 'Programación',
-      level: 'Intermedio',
-      students: 1250,
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=250&fit=crop',
-      rating: 4.8
-    },
-    {
-      id: 2,
-      title: 'Algoritmos y Estructuras de Datos',
-      instructor: 'Prof. Carlos Ruiz',
-      category: 'Programación',
-      level: 'Avanzado',
-      students: 890,
-      image: 'https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=250&fit=crop',
-      rating: 4.9
-    },
-    {
-      id: 3,
-      title: 'Física Cuántica: Fundamentos',
-      instructor: 'Dra. Ana Martínez',
-      category: 'Ciencias',
-      level: 'Avanzado',
-      students: 654,
-      image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=250&fit=crop',
-      rating: 4.7
-    },
-    {
-      id: 4,
-      title: 'Cálculo Multivariable',
-      instructor: 'Prof. Jorge López',
-      category: 'Matemáticas',
-      level: 'Intermedio',
-      students: 1100,
-      image: 'https://images.unsplash.com/photo-1635372722656-389f87a941b7?w=400&h=250&fit=crop',
-      rating: 4.6
-    },
-    {
-      id: 5,
-      title: 'Desarrollo Web Full Stack',
-      instructor: 'Ing. Laura Sánchez',
-      category: 'Programación',
-      level: 'Intermedio',
-      students: 2340,
-      image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=250&fit=crop',
-      rating: 4.9
-    },
-    {
-      id: 6,
-      title: 'Química Orgánica Avanzada',
-      instructor: 'Dr. Roberto Díaz',
-      category: 'Ciencias',
-      level: 'Avanzado',
-      students: 567,
-      image: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=250&fit=crop',
-      rating: 4.5
-    }
-  ];
+  featuredCourses: Course[] = [];
 
   stats = [
     { value: '2,400+', label: 'Cursos Disponibles' },
@@ -108,18 +38,41 @@ export class Home {
     { value: '95%', label: 'Tasa de Satisfacción' }
   ];
 
+  constructor(
+    private coursesService: CoursesService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    // Obtener cursos destacados (los primeros 6)
+    this.featuredCourses = this.coursesService.getAllCourses().slice(0, 6);
+  }
+
   onSearch(): void {
-    console.log('Buscando:', this.searchQuery);
-    // Aquí implementarías la lógica de búsqueda
+    if (this.searchQuery.trim()) {
+      // Guardar el término de búsqueda en el servicio
+      this.coursesService.setSearchQuery(this.searchQuery);
+      // Navegar a la página de cursos
+      this.router.navigate(['/cursos']);
+    }
   }
 
   onCategoryClick(category: Category): void {
-    console.log('Categoría seleccionada:', category.name);
-    // Aquí navegarías a la página de cursos filtrados por categoría
+    // Filtrar por categoría y navegar a cursos
+    this.coursesService.filterCourses('', category.name);
+    this.router.navigate(['/cursos']);
   }
 
   onCourseClick(course: Course): void {
-    console.log('Curso seleccionado:', course.title);
+    if (course.id === 1) {
+      window.location.href = '/myolab';
+    }
     // Aquí navegarías a la página de detalles del curso
+    console.log('Curso seleccionado:', course.title);
+    // this.router.navigate(['/cursos', course.id]);
+  }
+
+  navigateToCourses(): void {
+    this.router.navigate(['/cursos']);
   }
 }

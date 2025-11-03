@@ -1,0 +1,137 @@
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <h1 class="page-title">Catálogo de Cursos</h1>
+    <p class="page-subtitle">
+      Explora nuestra colección completa de cursos disponibles. Aprende nuevas habilidades a tu propio ritmo.
+    </p>
+  </div>
+</section>
+
+<!-- Filters Section -->
+<section class="filters-section">
+  <div class="container">
+    <div class="filters-container">
+      <!-- Search Bar -->
+      <div class="filter-group search-group">
+        <div class="search-box">
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Buscar cursos, instructores o temas..."
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            (input)="onSearch()"
+          >
+          <button class="search-btn" (click)="onSearch()">
+            <span class="search-icon">🔍</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="filter-group">
+        <label class="filter-label">Categoría</label>
+        <select 
+          class="filter-select" 
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()"
+        >
+          <option *ngFor="let category of categories" [value]="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Level Filter -->
+      <div class="filter-group">
+        <label class="filter-label">Nivel</label>
+        <select 
+          class="filter-select" 
+          [(ngModel)]="selectedLevel"
+          (change)="onLevelChange()"
+        >
+          <option *ngFor="let level of levels" [value]="level">
+            {{ level }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Reset Button -->
+      <div class="filter-group">
+        <button class="btn btn-outline reset-btn" (click)="resetFilters()">
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+      <p class="results-count">
+        <strong>{{ courses.length }}</strong> {{ courses.length === 1 ? 'curso encontrado' : 'cursos encontrados' }}
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Courses Grid Section -->
+<section class="courses-section">
+  <div class="container">
+    <!-- No Results Message -->
+    <div *ngIf="courses.length === 0" class="no-results">
+      <div class="no-results-icon">📚</div>
+      <h3 class="no-results-title">No se encontraron cursos</h3>
+      <p class="no-results-text">
+        Intenta ajustar tus filtros o realizar una búsqueda diferente.
+      </p>
+      <button class="btn btn-primary" (click)="resetFilters()">
+        Ver todos los cursos
+      </button>
+    </div>
+
+    <!-- Courses Grid -->
+    <div *ngIf="courses.length > 0" class="courses-grid">
+      <div 
+        *ngFor="let course of courses" 
+        class="course-card"
+        (click)="onCourseClick(course)"
+      >
+        <div class="course-image">
+          <img [src]="course.image" [alt]="course.title">
+          <span class="course-level">{{ course.level }}</span>
+        </div>
+        <div class="course-content">
+          <span class="course-category">{{ course.category }}</span>
+          <h3 class="course-title">{{ course.title }}</h3>
+          <p class="course-instructor">{{ course.instructor }}</p>
+          <p class="course-description">{{ course.description }}</p>
+          <div class="course-meta">
+            <span class="course-duration">⏱️ {{ course.duration }}</span>
+          </div>
+          <div class="course-footer">
+            <div class="course-rating">
+              <span class="star">⭐</span>
+              <span class="rating-value">{{ course.rating }}</span>
+            </div>
+            <div class="course-students">
+              {{ course.students }} estudiantes
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2 class="cta-title">¿No encuentras lo que buscas?</h2>
+      <p class="cta-text">
+        Estamos constantemente agregando nuevos cursos. Suscríbete para recibir notificaciones sobre nuevos contenidos.
+      </p>
+      <button class="btn btn-large btn-primary">Suscribirse</button>
+    </div>
+  </div>
+</section>

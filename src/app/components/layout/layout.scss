@@ -1,0 +1,202 @@
+// Variables
+$primary-color: #c8102e;
+$secondary-color: #8a8b8c;
+$dark-color: #222222;
+$light-bg: #f8f9fa;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$text-color: #333333;
+$text-light: #666666;
+
+$container-width: 1200px;
+$transition: all 0.3s ease;
+
+// Mixins
+@mixin container {
+  max-width: $container-width;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.container {
+  @include container;
+}
+
+// Header
+.header {
+  background: $white;
+  border-bottom: 1px solid $border-color;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+
+  &-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    cursor: pointer;
+  }
+
+  &-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  &-actions {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $primary-color;
+  margin: 0;
+}
+
+.tagline {
+  font-size: 0.75rem;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-link {
+  color: $text-color;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: $transition;
+
+  &:hover,
+  &.active {
+    color: $primary-color;
+  }
+
+  &.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $primary-color;
+  }
+}
+
+// Buttons
+.btn {
+  padding: 0.625rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition;
+  font-size: 0.95rem;
+
+  &-primary {
+    background: $primary-color;
+    color: $white;
+
+    &:hover {
+      background: darken($primary-color, 10%);
+    }
+  }
+
+  &-outline {
+    background: transparent;
+    color: $text-color;
+    border: 1px solid $border-color;
+
+    &:hover {
+      background: $light-bg;
+    }
+  }
+}
+
+// Footer
+.footer {
+  background: $dark-color;
+  color: $white;
+  padding: 3rem 0 1.5rem;
+  margin-top: auto;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.footer-column {
+  .footer-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: $white;
+  }
+
+  .footer-text {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.6;
+    font-size: 0.9rem;
+  }
+}
+
+.footer-links {
+  list-style: none;
+
+  li {
+    margin-bottom: 0.75rem;
+
+    a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      transition: $transition;
+      font-size: 0.9rem;
+
+      &:hover {
+        color: $white;
+      }
+    }
+  }
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+  }
+}
+
+// Responsive Design
+@media (max-width: 968px) {
+  .navbar-menu {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-actions {
+    display: none;
+  }
+}
