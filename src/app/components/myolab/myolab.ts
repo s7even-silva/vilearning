@@ -33,7 +33,7 @@ interface QuizQuestion {
   styleUrls: ['./myolab.scss']
 })
 export class Myolab implements OnInit, OnDestroy {
-  // Camera properties - usando el patrón que funciona
+  // Camera properties
   permissionStatus: string = '';
   camData: any = null;
   capturedImage: any = '';
@@ -121,13 +121,11 @@ export class Myolab implements OnInit, OnDestroy {
   }
 
   loadMediaPipeScripts(): void {
-    // Cargar MediaPipe Hands
     const handsScript = document.createElement('script');
     handsScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
     handsScript.crossOrigin = 'anonymous';
     
     handsScript.onload = () => {
-      // Cargar MediaPipe Camera Utils
       const cameraScript = document.createElement('script');
       cameraScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
       cameraScript.crossOrigin = 'anonymous';
@@ -151,7 +149,6 @@ export class Myolab implements OnInit, OnDestroy {
     document.head.appendChild(handsScript);
   }
 
-  // Método que funciona - copiado de tu código
   checkPermission(): void {
     navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
       .then((response) => {
@@ -160,7 +157,6 @@ export class Myolab implements OnInit, OnDestroy {
         this.labStarted = true;
         console.log('✅ Permisos de cámara concedidos:', this.camData);
         
-        // Esperar a que la webcam se inicialice antes de empezar detección
         setTimeout(() => {
           if (this.scriptsLoaded) {
             this.initializeMediaPipe();
@@ -183,7 +179,6 @@ export class Myolab implements OnInit, OnDestroy {
   }
 
   capture(event: WebcamImage): void {
-    // Este método se mantiene para compatibilidad con ngx-webcam
     console.log('📸 Imagen capturada:', event);
     this.capturedImage = event.imageAsDataUrl;
   }
@@ -325,14 +320,37 @@ export class Myolab implements OnInit, OnDestroy {
   }
 
   detectFingerStates(landmarks: any[]): void {
-    // Pulgar
-    this.fingerStates.thumb = landmarks[4].x < landmarks[3].x;
-    
-    // Otros dedos (extendidos si la punta está por encima de la articulación)
-    this.fingerStates.index = landmarks[8].y < landmarks[6].y;
-    this.fingerStates.middle = landmarks[12].y < landmarks[10].y;
-    this.fingerStates.ring = landmarks[16].y < landmarks[14].y;
-    this.fingerStates.pinky = landmarks[20].y < landmarks[18].y;
+    try {
+      // Función auxiliar para calcular distancia
+      const distance = (p1: any, p2: any): number => {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+      };
+      
+      const wrist = landmarks[0];
+      
+      // PULGAR - usar distancia
+      const thumbTip = landmarks[4];
+      const thumbBase = landmarks[2];
+      const thumbDist = distance(thumbTip, wrist) / distance(thumbBase, wrist);
+      this.fingerStates.thumb = thumbDist > 1.3;
+      
+      // ÍNDICE - comparar coordenada Y
+      this.fingerStates.index = landmarks[8].y < landmarks[6].y;
+      
+      // MEDIO - comparar coordenada Y
+      this.fingerStates.middle = landmarks[12].y < landmarks[10].y;
+      
+      // ANULAR - comparar coordenada Y
+      this.fingerStates.ring = landmarks[16].y < landmarks[14].y;
+      
+      // MEÑIQUE - comparar coordenada Y
+      this.fingerStates.pinky = landmarks[20].y < landmarks[18].y;
+      
+    } catch (error) {
+      console.error('Error en detectFingerStates:', error);
+    }
   }
 
   detectGesture(): void {
@@ -362,8 +380,7 @@ export class Myolab implements OnInit, OnDestroy {
     };
     
     // Aquí iría la lógica de WebSocket
-    // this.websocketService.send(data);
-    console.log('📡 Datos para enviar:', data);
+    // console.log('📡 Datos para enviar:', data);
   }
 
   finishLab(): void {
