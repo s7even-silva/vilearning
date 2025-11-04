@@ -106,11 +106,16 @@ export class HandDetectionService {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const landmarks = results.multiHandLandmarks[0] as Landmark[];
 
+      // Detectar si es mano izquierda o derecha
+      const handedness = results.multiHandedness && results.multiHandedness[0]
+        ? results.multiHandedness[0].label
+        : 'Right';
+
       // Dibujar la mano
       this.drawHand(landmarks);
 
       // Detectar estado de dedos usando fingerpose
-      const fingerStates = this.detectFingerStatesWithFingerpose(landmarks);
+      const fingerStates = this.detectFingerStatesWithFingerpose(landmarks, handedness);
 
       // Detectar gesto
       const gesture = this.detectGesture(fingerStates);
@@ -197,11 +202,11 @@ export class HandDetectionService {
     });
   }
 
-  private detectFingerStatesWithFingerpose(landmarks: Landmark[]): FingerState {
+  private detectFingerStatesWithFingerpose(landmarks: Landmark[], handedness: string): FingerState {
     // Calcular la curvatura de cada dedo manualmente usando los landmarks
     // fingerpose v0.1.0 no expone calculateFingerCurl directamente
 
-    const thumb = this.isFingerExtended(landmarks, [1, 2, 3, 4]);   // Pulgar
+    const thumb = this.isFingerExtended(landmarks, [1, 2, 3, 4], handedness);   // Pulgar
     const index = this.isFingerExtended(landmarks, [5, 6, 7, 8]);   // Índice
     const middle = this.isFingerExtended(landmarks, [9, 10, 11, 12]); // Medio
     const ring = this.isFingerExtended(landmarks, [13, 14, 15, 16]); // Anular
@@ -210,7 +215,7 @@ export class HandDetectionService {
     return { thumb, index, middle, ring, pinky };
   }
 
-  private isFingerExtended(landmarks: Landmark[], fingerIndices: number[]): boolean {
+  private isFingerExtended(landmarks: Landmark[], fingerIndices: number[], handedness?: string): boolean {
     // Calcular si un dedo está extendido usando distancias
     // fingerIndices = [base, mcp, pip, tip] (4 puntos del dedo)
 
@@ -220,7 +225,7 @@ export class HandDetectionService {
 
     // El pulgar requiere lógica especial debido a su movimiento perpendicular
     if (isThumb) {
-      return this.isThumbExtended(landmarks, fingerIndices);
+      return this.isThumbExtended(landmarks, fingerIndices, handedness || 'Right');
     }
 
     const [base, mcp, pip, tip] = fingerIndices.map(i => landmarks[i]);
@@ -251,17 +256,22 @@ export class HandDetectionService {
     return extensionRatio > 0.85;
   }
 
-  private isThumbExtended(landmarks: Landmark[], fingerIndices: number[]): boolean {
-    // Algoritmo simple y efectivo: comparar posición X del tip vs pip
+  private isThumbExtended(landmarks: Landmark[], fingerIndices: number[], handedness: string): boolean {
+    // Algoritmo robusto: comparar posición X del tip vs pip según la mano detectada
     const tipIndex = fingerIndices[3];  // Punta del pulgar (landmark 4)
     const pipIndex = fingerIndices[2];  // Articulación IP del pulgar (landmark 3)
 
     const tip = landmarks[tipIndex];
     const pip = landmarks[pipIndex];
 
-    // El pulgar está extendido si la punta está más a la DERECHA (mayor X) que el pip
-    // Esto funciona porque la cámara está en espejo
-    return tip.x > pip.x;
+    // MediaPipe devuelve "Left" o "Right" desde la perspectiva de la cámara (espejo)
+    // Para mano derecha: pulgar extendido cuando tip.x < pip.x
+    // Para mano izquierda: pulgar extendido cuando tip.x > pip.x
+    if (handedness === 'Right') {
+      return tip.x < pip.x;
+    } else {
+      return tip.x > pip.x;
+    }
   }
 
   private detectGesture(fingerStates: FingerState): string {
