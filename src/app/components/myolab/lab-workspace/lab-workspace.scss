@@ -1,0 +1,411 @@
+// Variables (consistentes con la página principal)
+$primary-color: #c8102e;
+$secondary-color: #8a8b8c;
+$dark-color: #222222;
+$light-bg: #f8f9fa;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$text-color: #333333;
+$text-light: #666666;
+$success: #28a745;
+$danger: #dc3545;
+$transition: all 0.3s ease;
+
+.lab-workspace {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.lab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: $white;
+  padding: 1.25rem 2rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $border-color;
+
+  h2 {
+    margin: 0;
+    color: $dark-color;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .btn-finish {
+    padding: 0.625rem 1.5rem;
+    background: $danger;
+    color: $white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: $transition;
+
+    &:hover {
+      background: darken($danger, 10%);
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+
+    .btn-finish {
+      width: 100%;
+    }
+  }
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+// Panel de cámara
+.camera-panel {
+  background: $white;
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $border-color;
+
+  h3 {
+    margin: 0 0 1.25rem 0;
+    color: $dark-color;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid $light-bg;
+  }
+
+  .camera-container {
+    position: relative;
+    background: $dark-color;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid $border-color;
+  }
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    height: auto;
+    background: $dark-color;
+
+    .overlay-canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 640px;
+    }
+  }
+
+  .detection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: $light-bg;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: $text-color;
+    border: 1px solid $border-color;
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: $secondary-color;
+      transition: $transition;
+
+      &.active {
+        background: $success;
+        box-shadow: 0 0 0 2px rgba($success, 0.2);
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba($success, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba($success, 0.1);
+  }
+}
+
+// Panel de visualización mejorado
+.hand-visualization-panel {
+  background: $white;
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $border-color;
+
+  h3 {
+    margin: 0 0 1.25rem 0;
+    color: $dark-color;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid $light-bg;
+  }
+
+  .hand-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  // Mano 3D mejorada
+  .hand-3d {
+    width: 100%;
+    max-width: 350px;
+    height: 400px;
+    background: linear-gradient(135deg, $light-bg 0%, darken($light-bg, 5%) 100%);
+    border-radius: 8px;
+    padding: 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    border: 1px solid $border-color;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 80%, rgba($primary-color, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+
+  .palm {
+    position: relative;
+    width: 120px;
+    height: 150px;
+    background: linear-gradient(135deg, #ffd7b5 0%, #ffcca3 100%);
+    border-radius: 60px 60px 20px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding: 10px 5px;
+    transition: $transition;
+
+    &.active {
+      box-shadow: 0 6px 20px rgba($success, 0.3);
+    }
+  }
+
+  .finger {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s ease;
+
+    &.thumb {
+      position: absolute;
+      left: -15px;
+      top: 40px;
+      transform: rotate(-30deg);
+
+      &.extended {
+        transform: rotate(-60deg) translateY(-10px);
+      }
+    }
+
+    &.index {
+      margin-top: 0;
+
+      &.extended {
+        transform: translateY(-50px);
+      }
+    }
+
+    &.middle {
+      margin-top: -10px;
+
+      &.extended {
+        transform: translateY(-60px);
+      }
+    }
+
+    &.ring {
+      margin-top: 0;
+
+      &.extended {
+        transform: translateY(-50px);
+      }
+    }
+
+    &.pinky {
+      margin-top: 10px;
+
+      &.extended {
+        transform: translateY(-40px);
+      }
+    }
+
+    .finger-segment {
+      width: 14px;
+      height: 25px;
+      background: linear-gradient(135deg, #ffd7b5 0%, #ffcca3 100%);
+      border-radius: 7px;
+      margin-bottom: 2px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .finger-tip {
+      width: 14px;
+      height: 20px;
+      background: linear-gradient(135deg, #ffd7b5 0%, #ffb88f 100%);
+      border-radius: 7px 7px 50% 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    &.extended {
+      .finger-segment, .finger-tip {
+        background: linear-gradient(135deg, #90EE90 0%, #7fd87f 100%);
+        box-shadow: 0 2px 6px rgba($success, 0.3);
+      }
+    }
+
+    &.thumb {
+      .finger-segment {
+        width: 16px;
+        height: 22px;
+      }
+      .finger-tip {
+        width: 16px;
+        height: 18px;
+      }
+    }
+
+    &.pinky {
+      .finger-segment {
+        width: 11px;
+        height: 20px;
+      }
+      .finger-tip {
+        width: 11px;
+        height: 16px;
+      }
+    }
+  }
+
+  .gesture-display {
+    text-align: center;
+    padding: 1rem 1.5rem;
+    background: $light-bg;
+    border-radius: 4px;
+    width: 100%;
+    border: 1px solid $border-color;
+
+    h4 {
+      margin: 0 0 0.5rem 0;
+      color: $text-light;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .gesture-text {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: $dark-color;
+    }
+  }
+}
+
+// Panel de estado de dedos
+.finger-status-panel {
+  background: $white;
+  border-radius: 4px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $border-color;
+
+  h3 {
+    margin: 0 0 1.25rem 0;
+    color: $dark-color;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid $light-bg;
+  }
+
+  .finger-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+
+  .finger-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: $light-bg;
+    border-radius: 4px;
+    border: 2px solid $border-color;
+    transition: $transition;
+
+    &.active {
+      background: lighten($success, 50%);
+      border-color: $success;
+      transform: scale(1.05);
+
+      .finger-state {
+        color: darken($success, 10%);
+        font-weight: 600;
+      }
+    }
+
+    .finger-icon {
+      font-size: 2rem;
+    }
+
+    .finger-label {
+      font-weight: 600;
+      color: $dark-color;
+      font-size: 0.9rem;
+    }
+
+    .finger-state {
+      font-size: 0.8rem;
+      color: $text-light;
+      font-weight: 500;
+    }
+  }
+}

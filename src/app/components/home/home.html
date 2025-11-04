@@ -8,9 +8,9 @@
         Aprende a tu propio ritmo, desde cualquier lugar.
       </p>
       <div class="search-box">
-        <input 
-          type="text" 
-          class="search-input" 
+        <input
+          type="text"
+          class="search-input"
           placeholder="Buscar cursos, instructores o temas..."
           [(ngModel)]="searchQuery"
           (keyup.enter)="onSearch()"
@@ -42,15 +42,16 @@
   <div class="container">
     <h2 class="section-title">Explora por Categoría</h2>
     <div class="categories-grid">
-      <div 
-        *ngFor="let category of categories" 
-        class="category-card"
-        (click)="onCategoryClick(category)"
-      >
-        <div class="category-icon">{{ category.icon }}</div>
-        <h3 class="category-name">{{ category.name }}</h3>
-        <p class="category-count">{{ category.count }} cursos</p>
-      </div>
+      @for (category of categories; track category.name) {
+        <div
+          class="category-card"
+          (click)="onCategoryClick(category)"
+        >
+          <div class="category-icon">{{ category.icon }}</div>
+          <h3 class="category-name">{{ category.name }}</h3>
+          <p class="category-count">{{ category.count }} cursos</p>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -63,30 +64,31 @@
       <a class="view-all" (click)="navigateToCourses()">Ver todos →</a>
     </div>
     <div class="courses-grid">
-      <div 
-        *ngFor="let course of featuredCourses" 
-        class="course-card"
-        (click)="onCourseClick(course)"
-      >
-        <div class="course-image">
-          <img [src]="course.image" [alt]="course.title">
-          <span class="course-level">{{ course.level }}</span>
-        </div>
-        <div class="course-content">
-          <span class="course-category">{{ course.category }}</span>
-          <h3 class="course-title">{{ course.title }}</h3>
-          <p class="course-instructor">{{ course.instructor }}</p>
-          <div class="course-footer">
-            <div class="course-rating">
-              <span class="star">⭐</span>
-              <span class="rating-value">{{ course.rating }}</span>
-            </div>
-            <div class="course-students">
-              {{ course.students }} estudiantes
+      @for (course of featuredCourses; track course.title) {
+        <div
+          class="course-card"
+          (click)="onCourseClick(course)"
+        >
+          <div class="course-image">
+            <img [src]="course.image" [alt]="course.title">
+            <span class="course-level">{{ course.level }}</span>
+          </div>
+          <div class="course-content">
+            <span class="course-category">{{ course.category }}</span>
+            <h3 class="course-title">{{ course.title }}</h3>
+            <p class="course-instructor">{{ course.instructor }}</p>
+            <div class="course-footer">
+              <div class="course-rating">
+                <span class="star">⭐</span>
+                <span class="rating-value">{{ course.rating }}</span>
+              </div>
+              <div class="course-students">
+                {{ course.students }} estudiantes
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   </div>
 </section>
@@ -95,10 +97,12 @@
 <section class="stats-section">
   <div class="container">
     <div class="stats-grid">
-      <div *ngFor="let stat of stats" class="stat-box">
-        <h3 class="stat-value">{{ stat.value }}</h3>
-        <p class="stat-label">{{ stat.label }}</p>
-      </div>
+      @for (stat of stats; track stat.label) {
+        <div class="stat-box">
+          <h3 class="stat-value">{{ stat.value }}</h3>
+          <p class="stat-label">{{ stat.label }}</p>
+        </div>
+      }
     </div>
   </div>
 </section>

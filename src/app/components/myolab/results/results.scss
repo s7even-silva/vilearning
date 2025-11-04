@@ -1,0 +1,149 @@
+// Variables
+$primary-color: #c8102e;
+$dark-color: #222222;
+$light-bg: #f8f9fa;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$text-color: #333333;
+$success: #28a745;
+$transition: all 0.3s ease;
+
+.results-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.results-card {
+  background: $white;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid $border-color;
+  animation: fadeIn 0.5s ease;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+  }
+
+  h2 {
+    margin: 0 0 2rem 0;
+    color: $dark-color;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .score-display {
+    margin-bottom: 2rem;
+  }
+
+  .score-circle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 160px;
+    background: $primary-color;
+    border-radius: 50%;
+    color: $white;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.25);
+    animation: scaleIn 0.5s ease 0.2s both;
+
+    .score-number {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .score-total {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+  }
+
+  .score-percentage {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $text-color;
+  }
+
+  .feedback-message {
+    padding: 1.5rem;
+    background: $light-bg;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    border: 1px solid $border-color;
+
+    p {
+      margin: 0;
+      font-size: 1.05rem;
+      color: $text-color;
+      line-height: 1.6;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+
+    button {
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: $transition;
+      flex: 1;
+      min-width: 180px;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    .btn-restart {
+      background: $primary-color;
+      color: $white;
+
+      &:hover {
+        background: darken($primary-color, 10%);
+      }
+    }
+
+    .btn-courses {
+      background: $success;
+      color: $white;
+
+      &:hover {
+        background: darken($success, 10%);
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}

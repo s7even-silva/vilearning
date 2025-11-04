@@ -1,0 +1,58 @@
+<div class="quiz-container">
+  <div class="quiz-card">
+    <div class="quiz-header">
+      <h2>Cuestionario del Laboratorio</h2>
+      <p class="quiz-progress">Pregunta {{ currentQuestionIndex + 1 }} de {{ questions.length }}</p>
+    </div>
+
+    <div class="question-container">
+      <h3 class="question-text">{{ currentQuestion.question }}</h3>
+
+      <div class="options-grid">
+        @for (option of currentQuestion.options; track $index) {
+          <button
+            class="option-btn"
+            [class.selected]="selectedAnswer === $index"
+            [class.correct]="answerSubmitted && $index === currentQuestion.correct"
+            [class.incorrect]="answerSubmitted && selectedAnswer === $index && $index !== currentQuestion.correct"
+            [disabled]="answerSubmitted"
+            (click)="selectAnswer($index)">
+            <span class="option-letter">{{ getOptionLetter($index) }}</span>
+            <span class="option-text">{{ option }}</span>
+            @if (answerSubmitted && $index === currentQuestion.correct) {
+              <span class="option-icon">✓</span>
+            }
+            @if (answerSubmitted && selectedAnswer === $index && $index !== currentQuestion.correct) {
+              <span class="option-icon error">✗</span>
+            }
+          </button>
+        }
+      </div>
+
+      @if (answerSubmitted) {
+        <div class="explanation">
+          <h4>Explicación:</h4>
+          <p>{{ currentQuestion.explanation }}</p>
+        </div>
+      }
+
+      <div class="quiz-actions">
+        @if (!answerSubmitted) {
+          <button
+            class="btn-submit"
+            [disabled]="selectedAnswer === null"
+            (click)="submitAnswer()">
+            Enviar Respuesta
+          </button>
+        }
+        @if (answerSubmitted) {
+          <button
+            class="btn-next"
+            (click)="nextQuestion()">
+            {{ isLastQuestion ? 'Ver Resultados' : 'Siguiente Pregunta' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

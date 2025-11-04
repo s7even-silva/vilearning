@@ -1,0 +1,25 @@
+<div class="results-container">
+  <div class="results-card">
+    <h2>¡Laboratorio Completado!</h2>
+    <div class="score-display">
+      <div class="score-circle">
+        <span class="score-number">{{ score }}</span>
+        <span class="score-total">/ {{ totalQuestions }}</span>
+      </div>
+      <p class="score-percentage">{{ percentage.toFixed(0) }}% de respuestas correctas</p>
+    </div>
+
+    <div class="feedback-message">
+      <p>{{ feedbackMessage }}</p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-restart" (click)="restartLab()">
+        🔄 Reiniciar Laboratorio
+      </button>
+      <button class="btn-courses" (click)="goToCourses()">
+        📚 Ver Más Cursos
+      </button>
+    </div>
+  </div>
+</div>

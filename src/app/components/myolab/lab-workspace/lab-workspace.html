@@ -1,0 +1,120 @@
+<div class="lab-workspace">
+  <div class="lab-header">
+    <h2>Laboratorio Activo</h2>
+    <button class="btn-finish" (click)="finishLab()">Finalizar Laboratorio</button>
+  </div>
+
+  <div class="workspace-grid">
+
+    <!-- Panel de cámara con overlay -->
+    <div class="camera-panel">
+      <h3>Vista de Cámara</h3>
+      <div class="camera-container">
+        <!-- Video y Canvas overlay -->
+        <div class="video-wrapper">
+          <!-- Video oculto - MediaPipe lo usa como fuente -->
+          <video
+            #video
+            style="display: none"
+            width="640"
+            height="480"
+            autoplay>
+          </video>
+
+          <!-- Canvas overlay para dibujar la detección -->
+          <canvas
+            #canvas
+            width="640"
+            height="480"
+            class="overlay-canvas">
+          </canvas>
+        </div>
+
+        <!-- Estado de la detección -->
+        <div class="detection-status">
+          <span class="status-indicator" [class.active]="detectionState.handDetected"></span>
+          @if (detectionState.handDetected) {
+            <span>Mano detectada</span>
+          } @else {
+            <span>Esperando mano...</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de visualización de la mano virtual -->
+    <div class="hand-visualization-panel">
+      <h3>Visualización de la Mano</h3>
+      <div class="hand-display">
+        <!-- Mano 3D mejorada -->
+        <div class="hand-3d">
+          <div class="palm" [class.active]="detectionState.handDetected">
+            <div class="finger thumb" [class.extended]="detectionState.fingerStates.thumb">
+              <div class="finger-segment"></div>
+              <div class="finger-segment"></div>
+              <div class="finger-tip"></div>
+            </div>
+            <div class="finger index" [class.extended]="detectionState.fingerStates.index">
+              <div class="finger-segment"></div>
+              <div class="finger-segment"></div>
+              <div class="finger-tip"></div>
+            </div>
+            <div class="finger middle" [class.extended]="detectionState.fingerStates.middle">
+              <div class="finger-segment"></div>
+              <div class="finger-segment"></div>
+              <div class="finger-tip"></div>
+            </div>
+            <div class="finger ring" [class.extended]="detectionState.fingerStates.ring">
+              <div class="finger-segment"></div>
+              <div class="finger-segment"></div>
+              <div class="finger-tip"></div>
+            </div>
+            <div class="finger pinky" [class.extended]="detectionState.fingerStates.pinky">
+              <div class="finger-segment"></div>
+              <div class="finger-segment"></div>
+              <div class="finger-tip"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gesto detectado -->
+        <div class="gesture-display">
+          <h4>Gesto Actual:</h4>
+          <p class="gesture-text">{{ detectionState.currentGesture }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de estado de dedos -->
+  <div class="finger-status-panel">
+    <h3>Estado de los Dedos</h3>
+    <div class="finger-grid">
+      <div class="finger-item" [class.active]="detectionState.fingerStates.thumb">
+        <span class="finger-icon">👍</span>
+        <span class="finger-label">Pulgar</span>
+        <span class="finger-state">{{ detectionState.fingerStates.thumb ? 'Extendido' : 'Contraído' }}</span>
+      </div>
+      <div class="finger-item" [class.active]="detectionState.fingerStates.index">
+        <span class="finger-icon">☝️</span>
+        <span class="finger-label">Índice</span>
+        <span class="finger-state">{{ detectionState.fingerStates.index ? 'Extendido' : 'Contraído' }}</span>
+      </div>
+      <div class="finger-item" [class.active]="detectionState.fingerStates.middle">
+        <span class="finger-icon">🖕</span>
+        <span class="finger-label">Medio</span>
+        <span class="finger-state">{{ detectionState.fingerStates.middle ? 'Extendido' : 'Contraído' }}</span>
+      </div>
+      <div class="finger-item" [class.active]="detectionState.fingerStates.ring">
+        <span class="finger-icon">💍</span>
+        <span class="finger-label">Anular</span>
+        <span class="finger-state">{{ detectionState.fingerStates.ring ? 'Extendido' : 'Contraído' }}</span>
+      </div>
+      <div class="finger-item" [class.active]="detectionState.fingerStates.pinky">
+        <span class="finger-icon">🤙</span>
+        <span class="finger-label">Meñique</span>
+        <span class="finger-state">{{ detectionState.fingerStates.pinky ? 'Extendido' : 'Contraído' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
