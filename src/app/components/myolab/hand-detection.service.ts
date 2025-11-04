@@ -160,10 +160,12 @@ export class HandDetectionService {
       [5, 9], [9, 13], [13, 17]            // Palma
     ];
 
-    this.canvasCtx.strokeStyle = '#00FF00';
-    this.canvasCtx.lineWidth = 2;
+    const fingerTips = [4, 8, 12, 16, 20]; // Índices de las puntas de los dedos
 
-    // Dibujar conexiones
+    // Dibujar conexiones con color primario de la página
+    this.canvasCtx.strokeStyle = '#c8102e'; // Color primario de la página
+    this.canvasCtx.lineWidth = 3;
+
     connections.forEach(([start, end]) => {
       const startPoint = landmarks[start];
       const endPoint = landmarks[end];
@@ -174,12 +176,24 @@ export class HandDetectionService {
       this.canvasCtx.stroke();
     });
 
-    // Dibujar landmarks
-    landmarks.forEach((landmark) => {
+    // Dibujar puntos con estilo mejorado
+    landmarks.forEach((landmark, index) => {
+      const x = landmark.x * 640;
+      const y = landmark.y * 480;
+
+      // Las puntas de los dedos se dibujan más grandes y con color diferente
+      const isTip = fingerTips.includes(index);
+      const radius = isTip ? 8 : 5;
+
       this.canvasCtx.beginPath();
-      this.canvasCtx.arc(landmark.x * 640, landmark.y * 480, 4, 0, 2 * Math.PI);
-      this.canvasCtx.fillStyle = '#FF0000';
+      this.canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
+      this.canvasCtx.fillStyle = isTip ? '#8b0a1e' : '#c8102e'; // Tono más oscuro para tips
       this.canvasCtx.fill();
+
+      // Borde blanco para mejor contraste
+      this.canvasCtx.strokeStyle = 'white';
+      this.canvasCtx.lineWidth = 2;
+      this.canvasCtx.stroke();
     });
   }
 
@@ -238,43 +252,16 @@ export class HandDetectionService {
   }
 
   private isThumbExtended(landmarks: Landmark[], fingerIndices: number[]): boolean {
-    // Detección especial para el pulgar
-    const [cmc, mcp, ip, tip] = fingerIndices.map(i => landmarks[i]);
+    // Algoritmo simple y efectivo: comparar posición X del tip vs pip
+    const tipIndex = fingerIndices[3];  // Punta del pulgar (landmark 4)
+    const pipIndex = fingerIndices[2];  // Articulación IP del pulgar (landmark 3)
 
-    // Referencias adicionales
-    const indexMCP = landmarks[5];  // Base del índice
-    const middleMCP = landmarks[9]; // Base del dedo medio
+    const tip = landmarks[tipIndex];
+    const pip = landmarks[pipIndex];
 
-    const distance = (p1: Landmark, p2: Landmark): number => {
-      const dx = p1.x - p2.x;
-      const dy = p1.y - p2.y;
-      const dz = p1.z - p2.z;
-      return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    };
-
-    // Método 1: Distancia de la punta del pulgar al índice
-    const tipToIndex = distance(tip, indexMCP);
-    const ipToIndex = distance(ip, indexMCP);
-
-    // Método 2: Distancia al centro de la palma
-    const tipToPalm = distance(tip, middleMCP);
-    const cmcToPalm = distance(cmc, middleMCP);
-
-    // Calcular ratios
-    const palmDistanceRatio = tipToPalm / cmcToPalm;
-
-    // El pulgar está extendido si cumple AL MENOS UNA de estas condiciones:
-    // 1. La punta está significativamente más lejos del índice que la articulación IP
-    const condition1 = tipToIndex > ipToIndex * 1.4;
-
-    // 2. La punta está más lejos del centro de la palma que la base
-    // Cuando el pulgar está flexionado, ratio es ~0.16-0.19
-    // Cuando está extendido, ratio debe ser > 0.8
-    const condition2 = palmDistanceRatio > 0.3;
-
-    const isExtended = condition1 || condition2;
-
-    return isExtended;
+    // El pulgar está extendido si la punta está más a la DERECHA (mayor X) que el pip
+    // Esto funciona porque la cámara está en espejo
+    return tip.x > pip.x;
   }
 
   private detectGesture(fingerStates: FingerState): string {
