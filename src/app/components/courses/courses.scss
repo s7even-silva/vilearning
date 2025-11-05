@@ -1,15 +1,5 @@
-// Variables
-$primary-color: #c8102e;
-$secondary-color: #8a8b8c;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
-$border-color: #e0e0e0;
-$text-color: #333333;
-$text-light: #666666;
-
-$container-width: 1200px;
-$transition: all 0.3s ease;
+// Importar variables globales
+@import '../../../styles/variables';
 
 // Mixins
 @mixin container {
@@ -29,7 +19,7 @@ $transition: all 0.3s ease;
   border-radius: 4px;
   font-weight: 600;
   cursor: pointer;
-  transition: $transition;
+  transition: all $transition-normal;
   font-size: 0.95rem;
 
   &-primary {
@@ -43,7 +33,7 @@ $transition: all 0.3s ease;
 
   &-outline {
     background: transparent;
-    color: $text-color;
+    color: $text-dark;
     border: 1px solid $border-color;
 
     &:hover {
@@ -110,7 +100,7 @@ $transition: all 0.3s ease;
 .filter-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: $text-color;
+  color: $text-dark;
 }
 
 .search-box {
@@ -135,7 +125,7 @@ $transition: all 0.3s ease;
   border: none;
   padding: 0 1.5rem;
   cursor: pointer;
-  transition: $transition;
+  transition: all $transition-normal;
 
   &:hover {
     background: darken($primary-color, 10%);
@@ -151,10 +141,10 @@ $transition: all 0.3s ease;
   border: 1px solid $border-color;
   border-radius: 6px;
   font-size: 0.95rem;
-  color: $text-color;
+  color: $text-dark;
   background: $white;
   cursor: pointer;
-  transition: $transition;
+  transition: all $transition-normal;
   outline: none;
 
   &:hover {
@@ -204,7 +194,7 @@ $transition: all 0.3s ease;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: $transition;
+  transition: all $transition-normal;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   &:hover {
@@ -266,7 +256,7 @@ $transition: all 0.3s ease;
 }
 
 .course-description {
-  color: $text-color;
+  color: $text-dark;
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 1rem;

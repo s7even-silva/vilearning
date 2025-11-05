@@ -1,15 +1,8 @@
-// Variables
-$primary-color: #c8102e;
-$secondary-color: #8a8b8c;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
-$border-color: #e0e0e0;
-$text-color: #333333;
-$text-light: #666666;
+// Importar variables globales
+@import '../../../styles/variables';
 
+// Variables locales específicas
 $container-width: 1200px;
-$transition: all 0.3s ease;
 
 // Mixins
 @mixin container {
@@ -26,15 +19,15 @@ $transition: all 0.3s ease;
 .btn {
   padding: 0.625rem 1.5rem;
   border: none;
-  border-radius: 4px;
+  border-radius: $border-radius-sm;
   font-weight: 600;
   cursor: pointer;
-  transition: $transition;
+  transition: $transition-normal;
   font-size: 0.95rem;
 
   &-primary {
     background: $primary-color;
-    color: $white;
+    color: $white-bg;
 
     &:hover {
       background: darken($primary-color, 10%);
@@ -68,7 +61,7 @@ $transition: all 0.3s ease;
 .hero-title {
   font-size: 3rem;
   font-weight: 700;
-  color: $dark-color;
+  color: $secondary-color;
   margin-bottom: 1rem;
 }
 

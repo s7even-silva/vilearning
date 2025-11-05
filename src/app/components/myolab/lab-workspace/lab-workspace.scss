@@ -1,15 +1,8 @@
-// Variables (consistentes con la página principal)
-$primary-color: #c8102e;
-$secondary-color: #8a8b8c;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
+// Importar variables globales
+@import '../../../../styles/variables';
+
+// Variables locales específicas
 $border-color: #e0e0e0;
-$text-color: #333333;
-$text-light: #666666;
-$success: #28a745;
-$danger: #dc3545;
-$transition: all 0.3s ease;
 
 .lab-workspace {
   max-width: 1400px;
@@ -25,7 +18,7 @@ $transition: all 0.3s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: $white;
+  background: $white-bg;
   padding: 1.25rem 2rem;
   border-radius: 4px;
   margin-bottom: 2rem;
@@ -41,7 +34,7 @@ $transition: all 0.3s ease;
 
   .btn-finish {
     padding: 0.625rem 1.5rem;
-    background: $danger;
+    background: $danger-color;
     color: $white;
     border: none;
     border-radius: 4px;
@@ -51,7 +44,7 @@ $transition: all 0.3s ease;
     transition: $transition;
 
     &:hover {
-      background: darken($danger, 10%);
+      background: darken($danger-color, 10%);
     }
   }
 
@@ -127,7 +120,7 @@ $transition: all 0.3s ease;
     border-radius: 4px;
     font-weight: 500;
     font-size: 0.9rem;
-    color: $text-color;
+    color: $text-dark;
     border: 1px solid $border-color;
 
     .status-indicator {
@@ -138,8 +131,8 @@ $transition: all 0.3s ease;
       transition: $transition;
 
       &.active {
-        background: $success;
-        box-shadow: 0 0 0 2px rgba($success, 0.2);
+        background: $success-color;
+        box-shadow: 0 0 0 2px rgba($success-color, 0.2);
         animation: pulse 2s infinite;
       }
     }
@@ -148,10 +141,10 @@ $transition: all 0.3s ease;
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 0 0 2px rgba($success, 0.2);
+    box-shadow: 0 0 0 2px rgba($success-color, 0.2);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba($success, 0.1);
+    box-shadow: 0 0 0 6px rgba($success-color, 0.1);
   }
 }
 
@@ -220,7 +213,7 @@ $transition: all 0.3s ease;
     transition: $transition;
 
     &.active {
-      box-shadow: 0 6px 20px rgba($success, 0.3);
+      box-shadow: 0 6px 20px rgba($success-color, 0.3);
     }
   }
 

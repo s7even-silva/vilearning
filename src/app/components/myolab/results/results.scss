@@ -1,12 +1,8 @@
-// Variables
-$primary-color: #c8102e;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
+// Importar variables globales
+@import '../../../../styles/variables';
+
+// Variables locales específicas
 $border-color: #e0e0e0;
-$text-color: #333333;
-$success: #28a745;
-$transition: all 0.3s ease;
 
 .results-container {
   max-width: 600px;
@@ -67,7 +63,7 @@ $transition: all 0.3s ease;
   .score-percentage {
     font-size: 1.2rem;
     font-weight: 600;
-    color: $text-color;
+    color: $text-dark;
   }
 
   .feedback-message {
@@ -80,7 +76,7 @@ $transition: all 0.3s ease;
     p {
       margin: 0;
       font-size: 1.05rem;
-      color: $text-color;
+      color: $text-dark;
       line-height: 1.6;
     }
   }
@@ -118,11 +114,11 @@ $transition: all 0.3s ease;
     }
 
     .btn-courses {
-      background: $success;
+      background: $success-color;
       color: $white;
 
       &:hover {
-        background: darken($success, 10%);
+        background: darken($success-color, 10%);
       }
     }
   }

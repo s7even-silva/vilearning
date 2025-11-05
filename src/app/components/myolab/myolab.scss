@@ -1,17 +1,8 @@
-// Variables (consistentes con la página principal)
-$primary-color: #c8102e;
-$secondary-color: #8a8b8c;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
+// Importar variables globales
+@import '../../../styles/variables';
+
+// Variables locales específicas
 $border-color: #e0e0e0;
-$text-color: #333333;
-$text-light: #666666;
-$success: #28a745;
-$danger: #dc3545;
-$warning: #ffc107;
-$info: #17a2b8;
-$transition: all 0.3s ease;
 
 .myolab-container {
   min-height: 100vh;
@@ -25,7 +16,7 @@ $transition: all 0.3s ease;
     top: 1.5rem;
     left: 1.5rem;
     padding: 0.75rem 1.5rem;
-    background: $white;
+    background: $white-bg;
     color: $primary-color;
     border: 2px solid $primary-color;
     border-radius: 4px;
@@ -115,7 +106,7 @@ $transition: all 0.3s ease;
 
       span:last-child {
         font-size: 0.9rem;
-        color: $text-color;
+        color: $text-dark;
         font-weight: 500;
         text-align: center;
       }
@@ -249,7 +240,7 @@ $transition: all 0.3s ease;
       border-radius: 4px;
       font-weight: 500;
       font-size: 0.9rem;
-      color: $text-color;
+      color: $text-dark;
       border: 1px solid $border-color;
 
       .status-indicator {
@@ -494,7 +485,7 @@ $transition: all 0.3s ease;
 
       .option-text {
         flex: 1;
-        color: $text-color;
+        color: $text-dark;
         line-height: 1.5;
       }
 
@@ -525,7 +516,7 @@ $transition: all 0.3s ease;
 
       p {
         margin: 0;
-        color: $text-color;
+        color: $text-dark;
         line-height: 1.6;
         font-size: 0.95rem;
       }
@@ -625,7 +616,7 @@ $transition: all 0.3s ease;
     .score-percentage {
       font-size: 1.2rem;
       font-weight: 600;
-      color: $text-color;
+      color: $text-dark;
     }
 
     .feedback-message {
@@ -638,7 +629,7 @@ $transition: all 0.3s ease;
       p {
         margin: 0;
         font-size: 1.05rem;
-        color: $text-color;
+        color: $text-dark;
         line-height: 1.6;
       }
     }

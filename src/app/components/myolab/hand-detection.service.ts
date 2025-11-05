@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Hands, Results } from '@mediapipe/hands';
 import { Camera } from '@mediapipe/camera_utils';
+import { APP_CONFIG } from '../../config/app.config';
 
 export interface Landmark {
   x: number;
@@ -75,8 +76,8 @@ export class HandDetectionService {
       this.hands.setOptions({
         maxNumHands: 1,
         modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minDetectionConfidence: APP_CONFIG.lab.minDetectionConfidence,
+        minTrackingConfidence: APP_CONFIG.lab.minTrackingConfidence
       });
 
       this.hands.onResults((results: Results) => this.onResults(results));
@@ -168,7 +169,7 @@ export class HandDetectionService {
     const fingerTips = [4, 8, 12, 16, 20]; // Índices de las puntas de los dedos
 
     // Dibujar conexiones con color primario de la página
-    this.canvasCtx.strokeStyle = '#c8102e'; // Color primario de la página
+    this.canvasCtx.strokeStyle = APP_CONFIG.colors.primary;
     this.canvasCtx.lineWidth = 3;
 
     connections.forEach(([start, end]) => {
@@ -192,7 +193,7 @@ export class HandDetectionService {
 
       this.canvasCtx.beginPath();
       this.canvasCtx.arc(x, y, radius, 0, 2 * Math.PI);
-      this.canvasCtx.fillStyle = isTip ? '#8b0a1e' : '#c8102e'; // Tono más oscuro para tips
+      this.canvasCtx.fillStyle = isTip ? APP_CONFIG.colors.primaryDark : APP_CONFIG.colors.primary;
       this.canvasCtx.fill();
 
       // Borde blanco para mejor contraste

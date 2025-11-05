@@ -1,15 +1,9 @@
-// Variables
-$primary-color: #c8102e;
-$secondary-color: #8a8b8c;
-$dark-color: #222222;
-$light-bg: #f8f9fa;
-$white: #ffffff;
-$border-color: #e0e0e0;
-$text-color: #333333;
-$text-light: #666666;
+// Importar variables globales
+@import '../../../styles/variables';
 
+// Variables locales específicas
 $container-width: 1200px;
-$transition: all 0.3s ease;
+$border-color: #e0e0e0;
 
 // Mixins
 @mixin container {
@@ -75,7 +69,7 @@ $transition: all 0.3s ease;
 }
 
 .nav-link {
-  color: $text-color;
+  color: $text-dark;
   text-decoration: none;
   font-weight: 500;
   padding: 0.5rem 0;
@@ -119,7 +113,7 @@ $transition: all 0.3s ease;
 
   &-outline {
     background: transparent;
-    color: $text-color;
+    color: $text-dark;
     border: 1px solid $border-color;
 
     &:hover {

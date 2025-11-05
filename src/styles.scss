@@ -1,1 +1,23 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Importar variables globales
+@import 'styles/variables';
+
+// Estilos globales
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family;
+  color: $text-dark;
+  background-color: $light-bg;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
