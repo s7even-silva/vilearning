@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CoursesService, Course } from '../../services/courses';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-courses',
@@ -12,6 +13,7 @@ import { CoursesService, Course } from '../../services/courses';
   styleUrls: ['./courses.scss']
 })
 export class Courses implements OnInit, OnDestroy {
+
   courses: Course[] = [];
   searchQuery: string = '';
   selectedCategory: string = 'Todas';
@@ -22,9 +24,24 @@ export class Courses implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
-  constructor(private coursesService: CoursesService) {}
+  constructor(private coursesService: CoursesService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    // For auto scrolling cuando viene un fragment (ej: desde búsqueda en home)
+    this.route.fragment.pipe(takeUntil(this.destroy$)).subscribe(fragment => {
+      if (fragment) {
+        // Esperar a que el DOM esté completamente renderizado
+        setTimeout(() => {
+          const element = document.getElementsByClassName(fragment)[0];
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 300);
+      }
+    });
+
+    
+
     // Obtener categorías y niveles
     this.categories = this.coursesService.getCategories();
     this.levels = this.coursesService.getLevels();
@@ -38,9 +55,15 @@ export class Courses implements OnInit, OnDestroy {
 
     // Obtener el término de búsqueda del servicio (si viene desde Home)
     this.searchQuery = this.coursesService.getSearchQuery();
-    
-    // Si no hay búsqueda previa, mostrar todos los cursos
-    if (!this.searchQuery) {
+
+    // Obtener la categoría y nivel seleccionados del servicio (si vienen desde Home)
+    this.selectedCategory = this.coursesService.getSelectedCategory();
+    this.selectedLevel = this.coursesService.getSelectedLevel();
+
+    // Si hay filtros previos, aplicarlos; si no, mostrar todos los cursos
+    if (this.searchQuery || this.selectedCategory !== 'Todas' || this.selectedLevel !== 'Todos') {
+      this.coursesService.filterCourses(this.searchQuery, this.selectedCategory, this.selectedLevel);
+    } else {
       this.coursesService.filterCourses('');
     }
   }
@@ -63,6 +86,12 @@ export class Courses implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
+    // Guardar los filtros en el servicio
+    this.coursesService.setSearchQuery(this.searchQuery);
+    this.coursesService.setSelectedCategory(this.selectedCategory);
+    this.coursesService.setSelectedLevel(this.selectedLevel);
+
+    // Aplicar los filtros
     this.coursesService.filterCourses(
       this.searchQuery,
       this.selectedCategory,

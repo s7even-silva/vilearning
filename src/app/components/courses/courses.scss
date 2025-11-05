@@ -72,11 +72,11 @@
 // Filters Section
 .filters-section {
   background: $white;
-  padding: 2rem 0;
+  padding: 1rem 0rem;
   border-bottom: 1px solid $border-color;
   position: sticky;
-  top: 65px;
-  z-index: 100;
+  top: 100px;
+  z-index: 10;
 }
 
 .filters-container {
@@ -132,7 +132,7 @@
   }
 }
 
-.search-icon {
+.search-text {
   font-size: 1.15rem;
 }
 

@@ -16,7 +16,7 @@
           (keyup.enter)="onSearch()"
         >
         <button class="search-btn" (click)="onSearch()">
-          <span class="search-icon">🔍</span>
+          <span class="search-text">Buscar</span>
         </button>
       </div>
       <div class="hero-stats">
@@ -47,7 +47,7 @@
           class="category-card"
           (click)="onCategoryClick(category)"
         >
-          <div class="category-icon">{{ category.icon }}</div>
+          <!--div class="category-icon">{{ category.icon }}</div-->
           <h3 class="category-name">{{ category.name }}</h3>
           <p class="category-count">{{ category.count }} cursos</p>
         </div>

@@ -193,6 +193,8 @@ export class CoursesService {
 
   private coursesSubject = new BehaviorSubject<Course[]>(this.allCourses);
   private searchQuerySubject = new BehaviorSubject<string>('');
+  private selectedCategorySubject = new BehaviorSubject<string>('Todas');
+  private selectedLevelSubject = new BehaviorSubject<string>('Todos');
 
   courses$ = this.coursesSubject.asObservable();
   searchQuery$ = this.searchQuerySubject.asObservable();
@@ -214,6 +216,22 @@ export class CoursesService {
 
   getSearchQuery(): string {
     return this.searchQuerySubject.value;
+  }
+
+  setSelectedCategory(category: string): void {
+    this.selectedCategorySubject.next(category);
+  }
+
+  getSelectedCategory(): string {
+    return this.selectedCategorySubject.value;
+  }
+
+  setSelectedLevel(level: string): void {
+    this.selectedLevelSubject.next(level);
+  }
+
+  getSelectedLevel(): string {
+    return this.selectedLevelSubject.value;
   }
 
   filterCourses(query: string, category?: string, level?: string): void {
@@ -257,6 +275,8 @@ export class CoursesService {
 
   resetFilters(): void {
     this.searchQuerySubject.next('');
+    this.selectedCategorySubject.next('Todas');
+    this.selectedLevelSubject.next('Todos');
     this.coursesSubject.next(this.allCourses);
   }
 }

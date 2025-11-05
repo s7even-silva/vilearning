@@ -25,8 +25,7 @@ export class Home implements OnInit {
     { name: 'Ciencias', icon: '🔬', count: 189 },
     { name: 'Matemáticas', icon: '📐', count: 156 },
     { name: 'Programación', icon: '💻', count: 312 },
-    { name: 'Negocios', icon: '💼', count: 145 },
-    { name: 'Artes', icon: '🎨', count: 98 }
+    { name: 'Negocios', icon: '💼', count: 145 }
   ];
 
   featuredCourses: Course[] = [];
@@ -53,14 +52,17 @@ export class Home implements OnInit {
       // Guardar el término de búsqueda en el servicio
       this.coursesService.setSearchQuery(this.searchQuery);
       // Navegar a la página de cursos
-      this.router.navigate(['/cursos']);
+      this.router.navigate(['/cursos'], {fragment: 'filters-section'});
     }
   }
 
   onCategoryClick(category: Category): void {
-    // Filtrar por categoría y navegar a cursos
+    // Establecer la categoría seleccionada en el servicio
+    this.coursesService.setSelectedCategory(category.name);
+    // Filtrar por categoría
     this.coursesService.filterCourses('', category.name);
-    this.router.navigate(['/cursos']);
+    // Navegar a cursos con scroll a filtros
+    this.router.navigate(['/cursos'], { fragment: 'filters-section' });
   }
 
   onCourseClick(course: Course): void {
