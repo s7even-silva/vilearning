@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, ElementRef, ViewChild, OnDestroy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HandDetectionService, HandDetectionState } from '../hand-detection.service';
+import { SerialService } from '../serial.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -32,7 +33,8 @@ export class LabWorkspace implements AfterViewInit, OnDestroy {
 
   constructor(
     private handDetectionService: HandDetectionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public serialService: SerialService
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
@@ -62,5 +64,17 @@ export class LabWorkspace implements AfterViewInit, OnDestroy {
 
   finishLab(): void {
     this.onFinish.emit();
+  }
+
+  async connectSerial(): Promise<void> {
+    await this.serialService.requestSerialPort();
+  }
+
+  async disconnectSerial(): Promise<void> {
+    await this.serialService.disconnect();
+  }
+
+  get isSerialConnected(): boolean {
+    return this.serialService.isPortConnected();
   }
 }

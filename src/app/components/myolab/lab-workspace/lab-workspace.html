@@ -1,7 +1,18 @@
 <div class="lab-workspace">
   <div class="lab-header">
     <h2>Laboratorio Activo</h2>
-    <button class="btn-finish" (click)="finishLab()">Finalizar Laboratorio</button>
+    <div class="header-actions">
+      @if (!isSerialConnected) {
+        <button class="btn-serial" (click)="connectSerial()">
+          🔌 Conectar Puerto Serial
+        </button>
+      } @else {
+        <button class="btn-serial connected" (click)="disconnectSerial()">
+          ✅ Puerto Conectado
+        </button>
+      }
+      <button class="btn-finish" (click)="finishLab()">Finalizar Laboratorio</button>
+    </div>
   </div>
 
   <div class="workspace-grid">
