@@ -55,6 +55,9 @@
           "defaultConfiguration": "production"
         },
         "serve": {
+          "options": {
+            "allowedHosts": ["vlaboratory.org", ".vlaboratory.org"]
+          },
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
@@ -87,5 +90,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
