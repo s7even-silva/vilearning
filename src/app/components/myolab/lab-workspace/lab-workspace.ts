@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, ElementRef, ViewChild, OnDestroy, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HandDetectionService, HandDetectionState } from '../hand-detection.service';
-import { SerialService } from '../serial.service';
+import { WebSocketService } from '../../../services/websocket.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -34,7 +34,7 @@ export class LabWorkspace implements AfterViewInit, OnDestroy {
   constructor(
     private handDetectionService: HandDetectionService,
     private cdr: ChangeDetectorRef,
-    public serialService: SerialService
+    private websocketService: WebSocketService
   ) {}
 
   async ngAfterViewInit(): Promise<void> {
@@ -49,8 +49,10 @@ export class LabWorkspace implements AfterViewInit, OnDestroy {
         this.detectionState = state;
         this.cdr.detectChanges(); // Forzar detección de cambios
       });
+
+      // Conectar WebSocket automáticamente
+      this.websocketService.connect();
     } catch (error) {
-      console.error('Error al inicializar el laboratorio:', error);
       alert('Por favor, permite el acceso a la cámara para usar el laboratorio.');
     }
   }
@@ -60,21 +62,10 @@ export class LabWorkspace implements AfterViewInit, OnDestroy {
       this.subscription.unsubscribe();
     }
     this.handDetectionService.stop();
+    this.websocketService.disconnect();
   }
 
   finishLab(): void {
     this.onFinish.emit();
-  }
-
-  async connectSerial(): Promise<void> {
-    await this.serialService.requestSerialPort();
-  }
-
-  async disconnectSerial(): Promise<void> {
-    await this.serialService.disconnect();
-  }
-
-  get isSerialConnected(): boolean {
-    return this.serialService.isPortConnected();
   }
 }

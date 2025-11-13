@@ -93,7 +93,6 @@ export class HandDetectionService {
 
       this.camera.start();
     } catch (error) {
-      console.error('Error al inicializar detección de manos:', error);
       throw error;
     }
   }
@@ -136,7 +135,6 @@ export class HandDetectionService {
         const currentState = this.detectionState.value;
         // Solo actualizar si cambió el estado (para reducir actualizaciones)
         if (currentState.handDetected) {
-          console.log('❌ Mano no detectada');
           this.detectionState.next({
             handDetected: false,
             fingerStates: {
