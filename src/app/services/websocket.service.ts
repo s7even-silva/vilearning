@@ -108,7 +108,7 @@ export class WebSocketService implements OnDestroy {
     }
 
     try {
-      this.socket = new WebSocket(this.wsUrl);
+      this.socket = new WebSocket("https://ws.vlaboratory.org/");
 
       this.socket.onopen = () => {
         this.handleOpen();

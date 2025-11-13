@@ -102,6 +102,11 @@ function handleMessage(ws, message, clientType) {
 
     // Si es un comando de motor desde el frontend
     if (clientType === 'frontend' && data.type === 'motor_command') {
+      // Debug: verificar estado del ESP32
+      console.log('DEBUG - esp32Client existe?', esp32Client !== null);
+      console.log('DEBUG - esp32Client.readyState:', esp32Client ? esp32Client.readyState : 'N/A');
+      console.log('DEBUG - WebSocket.OPEN:', WebSocket.OPEN);
+
       // Reenviar al ESP32
       if (esp32Client && esp32Client.readyState === WebSocket.OPEN) {
         esp32Client.send(JSON.stringify(data));
