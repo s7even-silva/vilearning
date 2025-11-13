@@ -54,7 +54,7 @@ export class WebSocketService implements OnDestroy {
     // En producción con Cloudflare Tunnel
     // Subdominio dedicado: wss://ws.vlaboratory.org
     if (hostname === 'vlaboratory.org') {
-      return 'wss://ws.vlaboratory.org?client=frontend';
+      return 'https://ws.vlaboratory.org?client=frontend';
     }
 
     // Fallback genérico para otros dominios
