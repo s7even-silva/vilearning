@@ -31,8 +31,12 @@ wss.on('connection', (ws, req) => {
   // Identificar el tipo de cliente
   if (clientType === 'esp32') {
     handleESP32Connection(ws);
-  } else {
+  } else if (clientType === 'frontend') {
     handleFrontendConnection(ws);
+  } else {
+    console.log('Tipo de cliente desconocido. Cerrando conexión.');
+    ws.close(1008, 'Client type not specified');
+    return;
   }
 
   // Manejar mensajes entrantes

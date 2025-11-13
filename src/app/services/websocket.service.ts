@@ -52,8 +52,13 @@ export class WebSocketService implements OnDestroy {
     }
 
     // En producción con Cloudflare Tunnel
-    // Subdominio dedicado wss://ws.vlaboratory.org
-    return `${protocol}//ws.${hostname}?client=frontend`;  
+    // Subdominio dedicado: wss://ws.vlaboratory.org
+    if (hostname === 'vlaboratory.org') {
+      return 'wss://ws.vlaboratory.org?client=frontend';
+    }
+
+    // Fallback genérico para otros dominios
+    return `${protocol}//ws.${hostname}?client=frontend`;
   }
 
   /**
@@ -108,7 +113,7 @@ export class WebSocketService implements OnDestroy {
     }
 
     try {
-      this.socket = new WebSocket("https://ws.vlaboratory.org/");
+      this.socket = new WebSocket(this.wsUrl);
 
       this.socket.onopen = () => {
         this.handleOpen();
