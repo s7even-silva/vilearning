@@ -322,7 +322,7 @@ $border-color: #e0e0e0;
 
     &.extended {
       .finger-segment, .finger-tip {
-        background: linear-gradient(135deg, #90EE90 0%, #7fd87f 100%);
+        background: linear-gradient(135deg, $primary-light 0%, $primary-color 100%);
         box-shadow: 0 2px 6px rgba($success, 0.3);
       }
     }

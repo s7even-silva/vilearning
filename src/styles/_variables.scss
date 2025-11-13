@@ -3,18 +3,19 @@
 // ============================================
 // Modifica estas variables para cambiar el tema en toda la aplicación
 
-// Colores principales
-$primary-color: #c8102e;
-$primary-dark: #8b0a1e;
-$primary-light: #e81839;
+// Colores principales (tema verde)
+$primary-color: #2d9a0f;
+$primary-dark: #1f6b0a;
+$primary-light: #45b31e;
 
 // Colores secundarios
-$secondary-color: #2c3e50;
-$secondary-dark: #1a252f;
-$secondary-light: #34495e;
+$secondary-color: #34495e;
+$secondary-dark: #2c3e50;
+$secondary-light: #546e7a;
 
 // Colores de fondo
-$light-bg: #f8f9fa;
+$light-bg: #f8faf9;
+$light-green-bg: #f0fdf4;
 $white-bg: #ffffff;
 $dark-bg: #2c3e50;
 
@@ -33,19 +34,19 @@ $text-light: #666666;
 $text-white: #ffffff;
 
 // Colores de estado
-$success-color: #28a745;
-$warning-color: #ffc107;
-$danger-color: #dc3545;
-$info-color: #17a2b8;
+$success-color: #2d9a0f;
+$warning-color: #f59e0b;
+$danger-color: #dc2626;
+$info-color: #0891b2;
 
-$success: #28a745;
-$warning: #ffc107;
-$danger: #dc3545;
-$info: #17a2b8;
+$success: #2d9a0f;
+$warning: #f59e0b;
+$danger: #dc2626;
+$info: #0891b2;
 
 // Colores de hover/interacción
-$hover-color: #e81839;
-$active-color: #8b0a1e;
+$hover-color: #45b31e;
+$active-color: #1f6b0a;
 
 // Sombras
 $shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);

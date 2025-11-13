@@ -3,7 +3,6 @@
 
 // Variables locales específicas
 $container-width: 1200px;
-$border-color: #e0e0e0;
 
 // Mixins
 @mixin container {
@@ -35,9 +34,16 @@ $border-color: #e0e0e0;
 
   &-brand {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
     gap: 0.25rem;
     cursor: pointer;
+
+    &:hover {
+      .logo-image {
+        transform: scale(1.05);
+      }
+    }
   }
 
   &-menu {
@@ -54,11 +60,29 @@ $border-color: #e0e0e0;
   }
 }
 
+.logo-image {
+  height: 65px;
+  width: auto;
+  margin-right: 1rem;
+  padding: 0.6rem;
+  background-color: $secondary-light;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-sm;
+  transition: $transition;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .logo {
   font-size: 1.75rem;
   font-weight: 700;
   color: $primary-color;
   margin: 0;
+  line-height: 1.2;
 }
 
 .tagline {
@@ -66,6 +90,7 @@ $border-color: #e0e0e0;
   color: $text-light;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-top: 0.15rem;
 }
 
 .nav-link {
