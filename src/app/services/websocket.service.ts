@@ -51,15 +51,9 @@ export class WebSocketService implements OnDestroy {
       return 'ws://localhost:3001?client=frontend';
     }
 
-    // En producción (ajustar según tu configuración de Cloudflare)
-    // Opción 1: Subdomain dedicado
-    // return `${protocol}//ws.${hostname}?client=frontend`;
-
-    // Opción 2: Mismo dominio con path
-    // return `${protocol}//${hostname}/ws?client=frontend`;
-
-    // Opción 3: IP fija de la Raspberry Pi (para testing)
-    return 'ws://192.168.1.100:3001?client=frontend';
+    // En producción con Cloudflare Tunnel
+    // Subdominio dedicado wss://ws.vlaboratory.org
+    return `${protocol}//ws.${hostname}?client=frontend`;  
   }
 
   /**

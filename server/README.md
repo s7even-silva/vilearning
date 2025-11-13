@@ -368,3 +368,26 @@ Para reportar bugs o sugerir mejoras, crear un issue en el repositorio del proye
 ## 📄 Licencia
 
 ISC
+
+
+### Producción (Internet con Cloudflare Tunnel vía Dashboard)
+
+#### Configuración en Dashboard de Cloudflare:
+
+1. Ir a: Zero Trust → Access → Tunnels → [Tu túnel]
+2. En "Public Hostname", agregar:
+
+**Ruta 1: WebSocket**
+- Subdomain: `ws`
+- Domain: `vlaboratory.org`
+- Service: `http://localhost:3001`
+
+**Ruta 2: Angular (si no existe)**
+- Subdomain: (vacío)
+- Domain: `vlaboratory.org`
+- Service: `http://localhost:4200`
+
+3. Frontend conecta a: `wss://ws.vlaboratory.org?client=frontend`
+4. ESP32 conecta a: `ws://[IP_LOCAL_RASPBERRY]:3001?client=esp32`
+
+**Nota**: ESP32 siempre debe conectarse a la IP local de la Raspberry Pi, no al túnel de Cloudflare.
