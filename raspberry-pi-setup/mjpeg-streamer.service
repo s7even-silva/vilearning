@@ -1,0 +1,18 @@
+[Unit]
+Description=MJPEG Streamer for USB Camera
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=emg2
+WorkingDirectory=/home/emg2
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/local/bin/mjpg_streamer -i "input_uvc.so -d /dev/video0 -r 640x480 -f 30 -q 80" -o "output_http.so -p 8080 -w /usr/local/share/mjpg-streamer/www"
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

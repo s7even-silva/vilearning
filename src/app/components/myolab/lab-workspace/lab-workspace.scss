@@ -350,6 +350,119 @@ $border-color: #e0e0e0;
     }
   }
 
+  // Contenedor de cámara USB
+  .usb-camera-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 400px;
+
+    .usb-camera-stream {
+      width: 100%;
+      height: auto;
+      max-height: 480px;
+      border-radius: 8px;
+      background: $dark-color;
+      border: 1px solid $border-color;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      object-fit: contain;
+    }
+
+    .camera-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      min-height: 300px;
+      padding: 2rem;
+      background: linear-gradient(135deg, $light-bg 0%, darken($light-bg, 3%) 100%);
+      border-radius: 8px;
+      border: 2px dashed $border-color;
+
+      &.loading {
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid $light-bg;
+          border-top-color: $primary-color;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        p {
+          margin: 0;
+          color: $text-light;
+          font-size: 1rem;
+          font-weight: 500;
+        }
+      }
+
+      &.error {
+        border-color: $danger-color;
+        background: lighten($danger-color, 45%);
+
+        .error-icon {
+          font-size: 4rem;
+          opacity: 0.7;
+        }
+
+        p {
+          margin: 0;
+          color: $danger-color;
+          font-size: 1rem;
+          font-weight: 500;
+          text-align: center;
+        }
+
+        .btn-retry {
+          margin-top: 0.5rem;
+          padding: 0.625rem 1.5rem;
+          background: $primary-color;
+          color: $text-white;
+          border: none;
+          border-radius: $border-radius-sm;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: $transition-normal;
+
+          &:hover {
+            background: darken($primary-color, 10%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba($primary-color, 0.3);
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+        }
+      }
+    }
+
+    .stream-indicator {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(220, 38, 38, 0.95);
+        color: white;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+        animation: pulse-live 2s infinite;
+      }
+    }
+  }
+
   .gesture-display {
     text-align: center;
     padding: 1rem 1.5rem;
@@ -373,6 +486,21 @@ $border-color: #e0e0e0;
       font-weight: 600;
       color: $dark-color;
     }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-live {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    box-shadow: 0 2px 16px rgba(220, 38, 38, 0.6);
   }
 }
 

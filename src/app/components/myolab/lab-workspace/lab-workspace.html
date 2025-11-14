@@ -44,40 +44,47 @@
       </div>
     </div>
 
-    <!-- Panel de visualización de la mano virtual -->
+    <!-- Panel de visualización de la prótesis (Cámara USB) -->
     <div class="hand-visualization-panel">
       <h3>Visualización de la Mano</h3>
-      <div class="hand-display">
-        <!-- Mano 3D mejorada -->
-        <div class="hand-3d">
-          <div class="palm" [class.active]="detectionState.handDetected">
-            <div class="finger thumb" [class.extended]="detectionState.fingerStates.thumb">
-              <div class="finger-segment"></div>
-              <div class="finger-segment"></div>
-              <div class="finger-tip"></div>
-            </div>
-            <div class="finger index" [class.extended]="detectionState.fingerStates.index">
-              <div class="finger-segment"></div>
-              <div class="finger-segment"></div>
-              <div class="finger-tip"></div>
-            </div>
-            <div class="finger middle" [class.extended]="detectionState.fingerStates.middle">
-              <div class="finger-segment"></div>
-              <div class="finger-segment"></div>
-              <div class="finger-tip"></div>
-            </div>
-            <div class="finger ring" [class.extended]="detectionState.fingerStates.ring">
-              <div class="finger-segment"></div>
-              <div class="finger-segment"></div>
-              <div class="finger-tip"></div>
-            </div>
-            <div class="finger pinky" [class.extended]="detectionState.fingerStates.pinky">
-              <div class="finger-segment"></div>
-              <div class="finger-segment"></div>
-              <div class="finger-tip"></div>
-            </div>
+      <div class="usb-camera-container">
+        <!-- Stream de la cámara USB -->
+        @if (!cameraStreamState.hasError) {
+          <img
+            #usbCamera
+            [src]="cameraStreamState.url"
+            alt="Vista de la prótesis"
+            class="usb-camera-stream"
+            (load)="onCameraLoad()"
+            (error)="onCameraError()"
+          />
+        }
+
+        <!-- Estado de carga -->
+        @if (!cameraStreamState.isLoaded && !cameraStreamState.hasError) {
+          <div class="camera-status loading">
+            <div class="spinner"></div>
+            <p>Cargando stream de la prótesis...</p>
           </div>
-        </div>
+        }
+
+        <!-- Estado de error -->
+        @if (cameraStreamState.hasError) {
+          <div class="camera-status error">
+            <div class="error-icon">⚠️</div>
+            <p>{{ cameraStreamState.errorMessage || 'No se pudo cargar el stream' }}</p>
+            <button class="btn-retry" (click)="retryCameraStream()">
+              🔄 Reintentar
+            </button>
+          </div>
+        }
+
+        <!-- Indicador de stream activo -->
+        @if (cameraStreamState.isLoaded) {
+          <div class="stream-indicator">
+            <span class="live-badge">🔴 EN VIVO</span>
+          </div>
+        }
 
         <!-- Gesto detectado -->
         <div class="gesture-display">
