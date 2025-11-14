@@ -50,11 +50,14 @@
           [style.animation-delay.ms]="$index * 100"
           (click)="onCategoryClick(category)"
         >
-          <div class="category-shape">
-            <div class="shape-decoration"></div>
+          <div class="category-image">
+            <img [src]="category.image" [alt]="category.name">
+            <div class="category-overlay"></div>
           </div>
-          <h3 class="category-name">{{ category.name }}</h3>
-          <p class="category-count">{{ category.count }} laboratorio</p>
+          <div class="category-content">
+            <h3 class="category-name">{{ category.name }}</h3>
+            <p class="category-count">{{ category.count }} laboratorio</p>
+          </div>
         </div>
       }
     </div>

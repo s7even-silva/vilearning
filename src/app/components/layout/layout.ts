@@ -19,6 +19,13 @@ export class Layout {
   constructor(public router: Router) {}
 
   isActive(route: string): boolean {
-    return this.router.url === route || this.router.url.startsWith(route + '/');
+    // Extraer la ruta sin el fragmento (sin el #)
+    const urlWithoutFragment = this.router.url.split('#')[0];
+    const urlWithoutQuery = this.router.url.split('?')[0];
+
+    return urlWithoutFragment === route ||
+           urlWithoutFragment.startsWith(route + '/') ||
+           urlWithoutQuery === route ||
+           urlWithoutQuery.startsWith(route + '/');
   }
 }
