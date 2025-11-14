@@ -8,7 +8,7 @@ import { Subject, BehaviorSubject, interval, takeUntil } from 'rxjs';
 export class WebSocketService implements OnDestroy {
   // Constantes para ángulos de servos
   private readonly CONTRACTED_ANGLE = 85;
-  private readonly EXTENDED_ANGLE = 0;
+  private readonly EXTENDED_ANGLE = 10;
   private readonly SEND_INTERVAL_MS = 1000; // Enviar cada 1 segundo
   private readonly RECONNECT_INTERVAL_MS = 10000; // Reintentar conexión cada 10 segundos
   private readonly PING_INTERVAL_MS = 60000; // Enviar ping cada 60 segundos (para Cloudflare)
