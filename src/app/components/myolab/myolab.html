@@ -5,40 +5,370 @@
     ← Volver a Cursos
   </button>
 
-  <!-- Pantalla de bienvenida -->
+  <!-- Guía de Laboratorio -->
   @if (currentState === 'welcome') {
-    <div class="welcome-screen">
-      <div class="welcome-card">
-        <h1>🦾 Laboratorio de Prótesis Mioeléctrica</h1>
-        <p class="welcome-description">
-          En este laboratorio aprenderás cómo funcionan las prótesis mioeléctricas mediante
-          la detección en tiempo real de los movimientos de tu mano.
-        </p>
+    <!-- Progress bar -->
+    <div class="reading-progress-bar" [style.width.%]="readingProgress"></div>
 
-        <div class="features">
-          <div class="feature-item">
-            <span class="feature-icon">📹</span>
-            <span>Detección de mano con IA</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">👆</span>
-            <span>Reconocimiento de gestos</span>
-          </div>
-          <div class="feature-item">
-            <span class="feature-icon">🎯</span>
-            <span>Visualización en tiempo real</span>
-          </div>
+    <div class="guide-container">
+      <!-- Sidebar con índice -->
+      <aside class="guide-sidebar">
+        <div class="sidebar-content">
+          <h3 class="sidebar-title">Contenido</h3>
+          <nav class="guide-toc">
+            @for (item of tocItems; track item.id) {
+              <div class="toc-item-wrapper">
+                <a
+                  class="toc-item"
+                  [class.active]="activeSection === item.id"
+                  (click)="scrollToSection(item.id)"
+                >
+                  {{ item.title }}
+                </a>
+                @if (item.subItems) {
+                  <div class="toc-subitems">
+                    @for (subItem of item.subItems; track subItem.id) {
+                      <a
+                        class="toc-subitem"
+                        [class.active]="activeSection === subItem.id"
+                        (click)="scrollToSection(subItem.id)"
+                      >
+                        {{ subItem.title }}
+                      </a>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="guide-content">
+        <div class="guide-header fade-in-up">
+          <h1 class="guide-main-title">Experiencia de Laboratorio</h1>
+          <h2 class="guide-subtitle">Control de una Prótesis de Mano mediante Visión Artificial</h2>
         </div>
 
-        <button class="btn-start" (click)="startLab()">
-          🎥 Iniciar Laboratorio
-        </button>
+        <!-- 1. Introducción -->
+        <section id="introduccion" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">01</span>
+            <h2 class="section-title">Introducción</h2>
+          </div>
+          <div class="section-content">
+            <p>
+              En este laboratorio aprenderás cómo una prótesis mioeléctrica puede detectar y replicar
+              los movimientos de tu mano utilizando inteligencia artificial y visión por computadora.
+            </p>
+            <p>
+              Emplearemos las librerías <strong>MediaPipe Hands</strong> y procesamiento de imágenes,
+              que permiten identificar en tiempo real los 21 puntos clave de la mano humana a partir
+              de la imagen capturada por tu cámara web.
+            </p>
+            <p>
+              Estos puntos serán interpretados para reconocer gestos como cerrar, abrir, o mover los dedos,
+              y enviar comandos a una mano robótica impresa en 3D conectada mediante comunicación WebSocket
+              a un microcontrolador ESP32.
+            </p>
+            <div class="info-box">
+              <strong>Tecnología utilizada:</strong>
+              <ul>
+                <li>MediaPipe Hands - Detección de landmarks en tiempo real</li>
+                <li>WebSocket - Comunicación bidireccional con hardware</li>
+                <li>ESP32 - Microcontrolador para control de servomotores</li>
+                <li>Algoritmos de reconocimiento de gestos</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-        <p class="permission-note">
-          <small>Se solicitará permiso para acceder a tu cámara</small>
-        </p>
-      </div>
+        <!-- 2. Objetivos -->
+        <section id="objetivos" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">02</span>
+            <h2 class="section-title">Objetivos del Laboratorio</h2>
+          </div>
+          <div class="section-content">
+            <div class="objectives-grid">
+              <div class="objective-card">
+                <div class="objective-icon">1</div>
+                <h3>Comprender la Tecnología</h3>
+                <p>Entender cómo la visión artificial puede imitar la función de sensores mioeléctricos tradicionales.</p>
+              </div>
+              <div class="objective-card">
+                <div class="objective-icon">2</div>
+                <h3>Implementar Detección</h3>
+                <p>Utilizar un sistema de detección de gestos basado en inteligencia artificial en tiempo real.</p>
+              </div>
+              <div class="objective-card">
+                <div class="objective-icon">3</div>
+                <h3>Controlar Hardware</h3>
+                <p>Controlar una prótesis de mano robótica física a partir de los gestos detectados por la cámara.</p>
+              </div>
+              <div class="objective-card">
+                <div class="objective-icon">4</div>
+                <h3>Analizar y Reflexionar</h3>
+                <p>Evaluar la respuesta del sistema y reflexionar sobre sus aplicaciones en el campo biomédico.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Procedimiento -->
+        <section id="procedimiento" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">03</span>
+            <h2 class="section-title">Procedimiento Experimental</h2>
+          </div>
+          <div class="section-content">
+            <div class="timeline">
+              <!-- Paso 1 -->
+              <div id="paso-1" class="timeline-item">
+                <div class="timeline-marker">
+                  <span class="marker-number">1</span>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="timeline-title">Detección de la Mano</h3>
+                  <div class="timeline-body">
+                    <p>Al iniciar el laboratorio, se activará tu cámara web.</p>
+                    <ul>
+                      <li>El sistema detectará automáticamente la mano en el cuadro de video.</li>
+                      <li>Observa en pantalla los puntos de colores que representan las articulaciones.</li>
+                      <li>MediaPipe identificará 21 landmarks (puntos clave) de tu mano en tiempo real.</li>
+                      <li>La detección funciona con iluminación normal y no requiere marcadores especiales.</li>
+                    </ul>
+                    <div class="note-box">
+                      <strong>Nota:</strong> Asegúrate de tener buena iluminación y mantener tu mano dentro del
+                      cuadro de la cámara para una detección óptima.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Paso 2 -->
+              <div id="paso-2" class="timeline-item">
+                <div class="timeline-marker">
+                  <span class="marker-number">2</span>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="timeline-title">Reconocimiento de Gestos</h3>
+                  <div class="timeline-body">
+                    <p>El sistema de inteligencia artificial clasificará los movimientos de tu mano.</p>
+                    <p><strong>Gestos reconocidos:</strong></p>
+                    <ul>
+                      <li><strong>Puño cerrado (Fist):</strong> Cierra todos los dedos</li>
+                      <li><strong>Mano abierta (Open):</strong> Extiende todos los dedos</li>
+                      <li><strong>Señal de victoria (Victory):</strong> Índice y medio extendidos</li>
+                      <li><strong>Pulgar arriba (Thumbs Up):</strong> Solo pulgar extendido</li>
+                      <li><strong>Shaka:</strong> Pulgar y meñique extendidos</li>
+                      <li><strong>Apuntar (Point):</strong> Solo índice extendido</li>
+                    </ul>
+                    <p>
+                      En la sección de "Visualización de la mano 3D", verás un modelo que imita tu gesto,
+                      mostrando qué dedos están extendidos (verde) o contraídos (color piel).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Paso 3 -->
+              <div id="paso-3" class="timeline-item">
+                <div class="timeline-marker">
+                  <span class="marker-number">3</span>
+                </div>
+                <div class="timeline-content">
+                  <h3 class="timeline-title">Control de la Prótesis</h3>
+                  <div class="timeline-body">
+                    <p>Los gestos detectados se envían en tiempo real a la prótesis física.</p>
+                    <ul>
+                      <li>La conexión se establece mediante WebSocket con el servidor de control.</li>
+                      <li>Cada dedo de tu mano controla un servomotor independiente en la prótesis.</li>
+                      <li>El microcontrolador ESP32 recibe los comandos y mueve los servos a las posiciones correspondientes.</li>
+                      <li>Observa el stream de video de la cámara USB para ver el movimiento físico de la prótesis.</li>
+                      <li>Verifica la sincronía entre tu gesto y el movimiento de la mano robótica.</li>
+                    </ul>
+                    <div class="info-box">
+                      <strong>Comandos enviados:</strong>
+                      <ul>
+                        <li>Dedo extendido → Servo a 10°</li>
+                        <li>Dedo contraído → Servo a 85°</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Actividad de Evaluación -->
+        <section id="actividad" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">04</span>
+            <h2 class="section-title">Actividad de Evaluación</h2>
+          </div>
+          <div class="section-content">
+            <p>
+              Al finalizar la experiencia de laboratorio, responderás un cuestionario automático con
+              preguntas sobre los conceptos aprendidos, organizadas en 5 bloques temáticos.
+            </p>
+            <div class="quiz-preview">
+              <h4>Bloques temáticos del cuestionario:</h4>
+              <ul>
+                <li><strong>Fundamentos técnicos:</strong> MediaPipe Hands, OpenCV, sensores EMG, landmarks</li>
+                <li><strong>Reconocimiento y control:</strong> Procesamiento de gestos, WebSocket, ESP32</li>
+                <li><strong>Análisis del comportamiento:</strong> Factores de precisión, errores, métricas de confianza</li>
+                <li><strong>Aplicaciones biomédicas y éticas:</strong> Usos médicos, laboratorios remotos, consideraciones éticas</li>
+                <li><strong>Integración y reflexión:</strong> Flujo completo, retroalimentación, comparación con prótesis tradicionales</li>
+              </ul>
+            </div>
+            <p>
+              El cuestionario consta de <strong>20 preguntas</strong> con opciones múltiples.
+              Recibirás retroalimentación inmediata y explicaciones detalladas sobre tus respuestas.
+            </p>
+          </div>
+        </section>
+
+        <!-- 5. Retroalimentación -->
+        <section id="retroalimentacion" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">05</span>
+            <h2 class="section-title">Retroalimentación Automática</h2>
+          </div>
+          <div class="section-content">
+            <p>Después de responder cada pregunta, recibirás retroalimentación instantánea:</p>
+            <div class="feedback-examples">
+              <div class="feedback-example success">
+                <div class="feedback-icon">✓</div>
+                <div class="feedback-content">
+                  <strong>Respuesta Correcta</strong>
+                  <p>
+                    "Excelente! Has identificado correctamente el rol de MediaPipe en la detección de gestos.
+                    Esta librería utiliza modelos de aprendizaje profundo preentrenados por Google."
+                  </p>
+                </div>
+              </div>
+              <div class="feedback-example error">
+                <div class="feedback-icon">✗</div>
+                <div class="feedback-content">
+                  <strong>Respuesta Incorrecta</strong>
+                  <p>
+                    "Revisa el módulo de detección: MediaPipe localiza los 21 landmarks de la mano en tiempo
+                    real usando modelos de machine learning optimizados para navegadores."
+                  </p>
+                </div>
+              </div>
+            </div>
+            <p>
+              Al completar el cuestionario, verás tu puntuación final y podrás revisar las respuestas
+              correctas con explicaciones detalladas.
+            </p>
+          </div>
+        </section>
+
+        <!-- 6. Cierre y Reflexión -->
+        <section id="cierre" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">06</span>
+            <h2 class="section-title">Cierre y Reflexión</h2>
+          </div>
+          <div class="section-content">
+            <p>Al finalizar el laboratorio, reflexiona sobre las siguientes preguntas:</p>
+            <div class="reflection-questions">
+              <div class="question-card">
+                <h4>Ventajas del Sistema</h4>
+                <p>
+                  ¿Qué ventajas tiene este sistema de visión por computadora frente a los sensores EMG
+                  (electromiográficos) tradicionales utilizados en prótesis mioeléctricas convencionales?
+                </p>
+              </div>
+              <div class="question-card">
+                <h4>Aplicaciones Futuras</h4>
+                <p>
+                  ¿Qué otras aplicaciones podrías desarrollar con esta técnica de detección de gestos?
+                  Considera ámbitos como rehabilitación física, robótica colaborativa, teleoperación,
+                  interfaces humano-computadora, o realidad aumentada.
+                </p>
+              </div>
+              <div class="question-card">
+                <h4>Limitaciones y Mejoras</h4>
+                <p>
+                  ¿Qué limitaciones identificas en el sistema actual? ¿Cómo podrías mejorarlo para
+                  hacerlo más robusto, preciso o aplicable en entornos reales?
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. Mejora Visual -->
+        <section id="mejora-visual" class="guide-section fade-in-up">
+          <div class="section-header">
+            <span class="section-number">07</span>
+            <h2 class="section-title">Mejora Visual</h2>
+          </div>
+          <div class="section-content">
+            <p>
+              Durante el laboratorio, podrás observar múltiples visualizaciones que te ayudarán a
+              comprender el funcionamiento del sistema:
+            </p>
+            <div class="visual-features">
+              <div class="visual-item">
+                <h4>Detección en Tiempo Real</h4>
+                <p>
+                  Tu mano será detectada con 21 puntos clave coloreados que representan las articulaciones.
+                  Las líneas conectan estos puntos formando el esqueleto de la mano.
+                </p>
+              </div>
+              <div class="visual-item">
+                <h4>Modelo 3D Interactivo</h4>
+                <p>
+                  Un modelo tridimensional de la mano replica tu gesto en tiempo real. Los dedos
+                  extendidos se muestran en verde, mientras que los contraídos mantienen el color piel.
+                </p>
+              </div>
+              <div class="visual-item">
+                <h4>Stream de la Prótesis</h4>
+                <p>
+                  Una cámara USB captura el movimiento físico de la prótesis robótica, permitiéndote
+                  verificar la sincronía entre tu gesto y la respuesta del hardware.
+                </p>
+              </div>
+              <div class="visual-item">
+                <h4>Estado de Conexión</h4>
+                <p>
+                  Indicadores visuales te muestran el estado de la conexión WebSocket con el servidor
+                  y el microcontrolador ESP32.
+                </p>
+              </div>
+            </div>
+            <div class="info-box">
+              <strong>Consejo:</strong> El sistema reconoce los gestos mediante IA y replica los movimientos
+              en una prótesis real, creando una experiencia de control intuitiva y educativa.
+            </div>
+          </div>
+        </section>
+
+        <!-- Botón de inicio -->
+        <div class="guide-actions fade-in-up">
+          <button class="btn-start-lab" (click)="startLab()">
+            Iniciar Laboratorio
+          </button>
+          <p class="permission-note">
+            Se solicitará permiso para acceder a tu cámara web
+          </p>
+        </div>
+      </main>
     </div>
+
+    <!-- Back to top button -->
+    @if (showBackToTop) {
+      <button class="btn-back-to-top" (click)="scrollToTop()">
+        ↑
+      </button>
+    }
   }
 
   <!-- Área del laboratorio -->

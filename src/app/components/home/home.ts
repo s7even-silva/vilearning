@@ -21,20 +21,19 @@ export class Home implements OnInit {
   searchQuery: string = '';
   
   categories: Category[] = [
-    { name: 'Ingeniería', icon: '⚙️', count: 234 },
-    { name: 'Ciencias', icon: '🔬', count: 189 },
-    { name: 'Matemáticas', icon: '📐', count: 156 },
-    { name: 'Programación', icon: '💻', count: 312 },
-    { name: 'Negocios', icon: '💼', count: 145 }
+    { name: 'Ingeniería Biomédica', icon: '', count: 1 },
+    { name: 'Robótica', icon: '', count: 1 },
+    { name: 'Inteligencia Artificial', icon: '', count: 1 },
+    { name: 'Visión Artificial', icon: '', count: 1 }
   ];
 
   featuredCourses: Course[] = [];
 
   stats = [
-    { value: '2,400+', label: 'Cursos Disponibles' },
-    { value: '50,000+', label: 'Estudiantes Activos' },
-    { value: '500+', label: 'Instructores Expertos' },
-    { value: '95%', label: 'Tasa de Satisfacción' }
+    { value: '1', label: 'Laboratorio Disponible' },
+    { value: 'En tiempo real', label: 'Prótesis Controlable' },
+    { value: 'MediaPipe', label: 'Tecnología de Google' },
+    { value: '100% Gratis', label: 'Acceso Completo' }
   ];
 
   constructor(
@@ -43,8 +42,8 @@ export class Home implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Obtener cursos destacados (los primeros 6)
-    this.featuredCourses = this.coursesService.getAllCourses().slice(0, 6);
+    // Obtener solo el curso de MyoLab
+    this.featuredCourses = this.coursesService.getAllCourses().filter(course => course.id === 1);
   }
 
   onSearch(): void {

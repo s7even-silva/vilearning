@@ -1,11 +1,76 @@
 // Importar variables globales
 @import '../../../styles/variables';
 
+// Color palette
+$primary-color: #2d9a0f;
+$primary-light: #45b31e;
+$primary-dark: #1f6b0a;
+$secondary-color: #f6fff6;
+$dark-color: #1a1a1a;
+$text-dark: #333;
+$text-light: #666;
+$light-bg: #fafafa;
+$white: #ffffff;
+$border-color: #e0e0e0;
+$warning-color: #ffc107;
+
 // Mixins
 @mixin container {
-  max-width: $container-width;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+// Animations
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba($primary-color, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba($primary-color, 0.4);
+  }
+}
+
+@keyframes rotate-shape {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .container {
@@ -16,28 +81,36 @@
 .btn {
   padding: 0.625rem 1.5rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.95rem;
 
   &-primary {
-    background: $primary-color;
+    background: linear-gradient(135deg, $primary-color, $primary-light);
     color: $white;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.3);
 
     &:hover {
-      background: darken($primary-color, 10%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba($primary-color, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 
   &-outline {
     background: transparent;
     color: $text-dark;
-    border: 1px solid $border-color;
+    border: 2px solid $border-color;
 
     &:hover {
       background: $light-bg;
+      border-color: $primary-color;
+      color: $primary-color;
     }
   }
 
@@ -49,34 +122,69 @@
 
 // Page Header
 .page-header {
-  background: linear-gradient(135deg, $light-green-bg 0%, #e8f5e9 100%);
-  padding: 3rem 0;
+  position: relative;
+  background: linear-gradient(135deg, $primary-light 0%, $primary-color 100%);
+  padding: 4rem 0;
   text-align: center;
+  overflow: hidden;
+  animation: fade-in 0.6s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    animation: rotate-shape 20s linear infinite;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    animation: rotate-shape 15s linear infinite reverse;
+  }
 }
 
 .page-title {
-  font-size: 2.5rem;
+  position: relative;
+  z-index: 1;
+  font-size: 2.75rem;
   font-weight: 700;
-  color: $dark-color;
+  color: $white;
   margin-bottom: 0.75rem;
+  animation: slide-in 0.8s ease-out;
 }
 
 .page-subtitle {
-  font-size: 1.15rem;
-  color: $text-light;
+  position: relative;
+  z-index: 1;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.95);
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
+  animation: slide-in 0.8s ease-out 0.2s backwards;
 }
 
 // Filters Section
 .filters-section {
   background: $white;
-  padding: 1rem 0rem;
-  border-bottom: 1px solid $border-color;
+  padding: 2rem 0;
+  border-bottom: 2px solid $border-color;
   position: sticky;
   top: 100px;
   z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fade-in 0.6s ease-out 0.4s backwards;
 }
 
 .filters-container {
@@ -105,10 +213,16 @@
 
 .search-box {
   display: flex;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid $border-color;
+  border: 2px solid $border-color;
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    border-color: $primary-color;
+    box-shadow: 0 4px 16px rgba($primary-color, 0.2);
+  }
 }
 
 .search-input {
@@ -120,39 +234,41 @@
 }
 
 .search-btn {
-  background: $primary-color;
+  background: linear-gradient(135deg, $primary-color, $primary-light);
   color: $white;
   border: none;
   padding: 0 1.5rem;
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: darken($primary-color, 10%);
+    background: linear-gradient(135deg, $primary-dark, $primary-color);
   }
 }
 
 .search-text {
   font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .filter-select {
   padding: 0.875rem 1rem;
-  border: 1px solid $border-color;
-  border-radius: 6px;
+  border: 2px solid $border-color;
+  border-radius: 8px;
   font-size: 0.95rem;
   color: $text-dark;
   background: $white;
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: all 0.3s ease;
   outline: none;
 
   &:hover {
-    border-color: $secondary-color;
+    border-color: $primary-light;
   }
 
   &:focus {
     border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
   }
 }
 
@@ -164,6 +280,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  animation: fade-in 0.5s ease-out;
 }
 
 .results-count {
@@ -171,8 +288,8 @@
   color: $text-light;
 
   strong {
-    color: $dark-color;
-    font-weight: 600;
+    color: $primary-color;
+    font-weight: 700;
   }
 }
 
@@ -191,15 +308,21 @@
 
 .course-card {
   background: $white;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: scale-in 0.5s ease-out;
+  animation-fill-mode: backwards;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba($primary-color, 0.15);
+
+    .course-image img {
+      transform: scale(1.05);
+    }
   }
 }
 
@@ -207,11 +330,13 @@
   position: relative;
   height: 200px;
   overflow: hidden;
+  background: linear-gradient(135deg, $primary-light, $primary-color);
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -219,12 +344,13 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, rgba($primary-dark, 0.9), rgba($primary-color, 0.9));
   color: $white;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
+  backdrop-filter: blur(10px);
 }
 
 .course-content {
@@ -235,14 +361,14 @@
   display: inline-block;
   color: $primary-color;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.75rem;
 }
 
 .course-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: $dark-color;
   margin-bottom: 0.5rem;
@@ -258,7 +384,7 @@
 .course-description {
   color: $text-dark;
   font-size: 0.9rem;
-  line-height: 1.5;
+  line-height: 1.6;
   margin-bottom: 1rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -271,7 +397,7 @@
   gap: 1rem;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 2px solid $border-color;
 }
 
 .course-duration {
@@ -279,7 +405,13 @@
   color: $text-light;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  font-weight: 500;
+
+  &::before {
+    content: '●';
+    color: $primary-color;
+  }
 }
 
 .course-footer {
@@ -295,10 +427,11 @@
 
   .star {
     color: $warning-color;
+    font-size: 1.1rem;
   }
 
   .rating-value {
-    font-weight: 600;
+    font-weight: 700;
     color: $dark-color;
   }
 }
@@ -306,23 +439,60 @@
 .course-students {
   font-size: 0.85rem;
   color: $text-light;
+  font-weight: 500;
 }
 
 // No Results
 .no-results {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 5rem 2rem;
+  animation: fade-in 0.6s ease-out;
 }
 
 .no-results-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .icon-book {
+    width: 80px;
+    height: 100px;
+    background: linear-gradient(135deg, $primary-light, $primary-color);
+    border-radius: 8px 8px 4px 4px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%;
+      height: 2px;
+      background: $white;
+      box-shadow: 0 10px 0 $white, 0 20px 0 $white;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
 }
 
 .no-results-title {
   font-size: 1.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: $dark-color;
   margin-bottom: 0.75rem;
 }
@@ -334,31 +504,6 @@
   max-width: 500px;
   margin-left: auto;
   margin-right: auto;
-}
-
-// CTA Section
-.cta-section {
-  padding: 4rem 0;
-  background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 15%) 100%);
-  text-align: center;
-}
-
-.cta-content {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.cta-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: $white;
-  margin-bottom: 1rem;
-}
-
-.cta-text {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 2rem;
   line-height: 1.6;
 }
 
@@ -366,7 +511,7 @@
 @media (max-width: 968px) {
   .filters-container {
     grid-template-columns: 1fr;
-    
+
     .filter-group.search-group {
       grid-column: 1;
     }
@@ -377,7 +522,11 @@
   }
 
   .page-title {
-    font-size: 2rem;
+    font-size: 2.25rem;
+  }
+
+  .page-subtitle {
+    font-size: 1.1rem;
   }
 
   .filters-section {
@@ -386,19 +535,24 @@
 }
 
 @media (max-width: 640px) {
+  .page-header {
+    padding: 3rem 0;
+  }
+
   .page-title {
-    font-size: 1.75rem;
+    font-size: 1.85rem;
   }
 
   .page-subtitle {
     font-size: 1rem;
   }
 
-  .cta-title {
-    font-size: 1.5rem;
-  }
-
   .courses-grid {
     grid-template-columns: 1fr;
+  }
+
+  .course-card {
+    max-width: 500px;
+    margin: 0 auto;
   }
 }

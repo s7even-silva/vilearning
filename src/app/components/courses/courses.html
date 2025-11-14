@@ -84,7 +84,9 @@
     <!-- No Results Message -->
     @if (courses.length === 0) {
       <div class="no-results">
-        <div class="no-results-icon">📚</div>
+        <div class="no-results-icon">
+          <div class="icon-book"></div>
+        </div>
         <h3 class="no-results-title">No se encontraron cursos</h3>
         <p class="no-results-text">
           Intenta ajustar tus filtros o realizar una búsqueda diferente.
@@ -113,11 +115,11 @@
               <p class="course-instructor">{{ course.instructor }}</p>
               <p class="course-description">{{ course.description }}</p>
               <div class="course-meta">
-                <span class="course-duration">⏱️ {{ course.duration }}</span>
+                <span class="course-duration">{{ course.duration }}</span>
               </div>
               <div class="course-footer">
                 <div class="course-rating">
-                  <span class="star">⭐</span>
+                  <span class="star">★</span>
                   <span class="rating-value">{{ course.rating }}</span>
                 </div>
                 <div class="course-students">
@@ -129,18 +131,5 @@
         }
       </div>
     }
-  </div>
-</section>
-
-<!-- CTA Section -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-content">
-      <h2 class="cta-title">¿No encuentras lo que buscas?</h2>
-      <p class="cta-text">
-        Estamos constantemente agregando nuevos cursos. Suscríbete para recibir notificaciones sobre nuevos contenidos.
-      </p>
-      <button class="btn btn-large btn-primary">Suscribirse</button>
-    </div>
   </div>
 </section>

@@ -1,34 +1,36 @@
 <!-- Hero Section -->
 <section class="hero">
   <div class="container">
+    <div class="hero-background-shapes">
+      <div class="shape shape-circle-1"></div>
+      <div class="shape shape-circle-2"></div>
+      <div class="shape shape-square-1"></div>
+    </div>
     <div class="hero-content">
-      <h2 class="hero-title">Aprende sin límites</h2>
-      <p class="hero-subtitle">
-        Accede a miles de cursos y laboratorios virtuales de las mejores instituciones educativas del mundo.
-        Aprende a tu propio ritmo, desde cualquier lugar.
+      <h2 class="hero-title animate-fade-in">Aprende con Laboratorios Virtuales</h2>
+      <p class="hero-subtitle animate-fade-in-delay">
+        Experimenta con tecnología de vanguardia en ingeniería biomédica.
+        Controla una prótesis robótica real mediante visión artificial.
       </p>
-      <div class="search-box">
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Buscar cursos, instructores o temas..."
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="onSearch()"
-        >
-        <button class="search-btn" (click)="onSearch()">
-          <span class="search-text">Buscar</span>
-        </button>
-      </div>
-      <div class="hero-stats">
+      <div class="hero-stats animate-slide-up">
         <div class="stat-item">
+          <div class="stat-icon">
+            <div class="icon-circle"></div>
+          </div>
           <strong>100% Gratis</strong>
           <span>Contenido libre y abierto</span>
         </div>
         <div class="stat-item">
+          <div class="stat-icon">
+            <div class="icon-square"></div>
+          </div>
           <strong>Sin requisitos</strong>
           <span>Comienza cuando quieras</span>
         </div>
         <div class="stat-item">
+          <div class="stat-icon">
+            <div class="icon-triangle"></div>
+          </div>
           <strong>Certificados</strong>
           <span>Al completar los cursos</span>
         </div>
@@ -40,16 +42,19 @@
 <!-- Categories Section -->
 <section class="categories-section">
   <div class="container">
-    <h2 class="section-title">Explora por Categoría</h2>
+    <h2 class="section-title animate-fade-in">Áreas de Estudio</h2>
     <div class="categories-grid">
       @for (category of categories; track category.name) {
         <div
-          class="category-card"
+          class="category-card animate-scale-in"
+          [style.animation-delay.ms]="$index * 100"
           (click)="onCategoryClick(category)"
         >
-          <!--div class="category-icon">{{ category.icon }}</div-->
+          <div class="category-shape">
+            <div class="shape-decoration"></div>
+          </div>
           <h3 class="category-name">{{ category.name }}</h3>
-          <p class="category-count">{{ category.count }} cursos</p>
+          <p class="category-count">{{ category.count }} laboratorio</p>
         </div>
       }
     </div>
@@ -60,32 +65,26 @@
 <section class="courses-section">
   <div class="container">
     <div class="section-header">
-      <h2 class="section-title">Cursos Destacados</h2>
-      <a class="view-all" (click)="navigateToCourses()">Ver todos →</a>
+      <h2 class="section-title animate-fade-in">Laboratorio Destacado</h2>
+      <a class="view-all" (click)="navigateToCourses()">Ver detalles →</a>
     </div>
     <div class="courses-grid">
       @for (course of featuredCourses; track course.title) {
         <div
-          class="course-card"
+          class="course-card animate-fade-in"
           (click)="onCourseClick(course)"
         >
           <div class="course-image">
             <img [src]="course.image" [alt]="course.title">
             <span class="course-level">{{ course.level }}</span>
+            <div class="course-overlay">
+              <span class="overlay-text">Comenzar Laboratorio</span>
+            </div>
           </div>
           <div class="course-content">
             <span class="course-category">{{ course.category }}</span>
             <h3 class="course-title">{{ course.title }}</h3>
             <p class="course-instructor">{{ course.instructor }}</p>
-            <div class="course-footer">
-              <div class="course-rating">
-                <span class="star">⭐</span>
-                <span class="rating-value">{{ course.rating }}</span>
-              </div>
-              <div class="course-students">
-                {{ course.students }} estudiantes
-              </div>
-            </div>
           </div>
         </div>
       }
@@ -96,9 +95,15 @@
 <!-- Stats Section -->
 <section class="stats-section">
   <div class="container">
+    <div class="stats-background">
+      <div class="stat-shape stat-shape-1"></div>
+      <div class="stat-shape stat-shape-2"></div>
+      <div class="stat-shape stat-shape-3"></div>
+    </div>
     <div class="stats-grid">
       @for (stat of stats; track stat.label) {
-        <div class="stat-box">
+        <div class="stat-box animate-count-up" [style.animation-delay.ms]="$index * 150">
+          <div class="stat-decoration"></div>
           <h3 class="stat-value">{{ stat.value }}</h3>
           <p class="stat-label">{{ stat.label }}</p>
         </div>
@@ -110,12 +115,17 @@
 <!-- CTA Section -->
 <section class="cta-section">
   <div class="container">
-    <div class="cta-content">
-      <h2 class="cta-title">¿Listo para comenzar tu aprendizaje?</h2>
+    <div class="cta-background-shapes">
+      <div class="cta-shape cta-shape-1"></div>
+      <div class="cta-shape cta-shape-2"></div>
+    </div>
+    <div class="cta-content animate-fade-in">
+      <h2 class="cta-title">¿Listo para experimentar?</h2>
       <p class="cta-text">
-        Únete a miles de estudiantes que ya están transformando sus carreras con nuestros cursos y laboratorios virtuales.
+        Accede al laboratorio de prótesis mioeléctrica y experimenta con tecnología
+        de visión artificial y control robótico en tiempo real.
       </p>
-      <button class="btn btn-large btn-primary" (click)="navigateToCourses()">Explorar Cursos</button>
+      <button class="btn btn-large btn-cta" (click)="navigateToCourses()">Comenzar Ahora</button>
     </div>
   </div>
 </section>

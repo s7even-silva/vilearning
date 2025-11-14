@@ -1,6 +1,9 @@
 <div class="lab-workspace">
   <div class="lab-header">
-    <h2>Laboratorio Activo</h2>
+    <div class="header-title">
+      <span class="lab-badge">EN VIVO</span>
+      <h2>Laboratorio Activo</h2>
+    </div>
     <div class="header-actions">
       <button class="btn-finish" (click)="finishLab()">Finalizar Laboratorio</button>
     </div>
@@ -9,10 +12,13 @@
   <div class="workspace-grid">
 
     <!-- Panel de cámara con overlay -->
-    <div class="camera-panel">
-      <h3>Vista de Cámara</h3>
+    <div class="camera-panel panel-card">
+      <div class="panel-header">
+        <span class="panel-number">1</span>
+        <h3>Detección de Mano</h3>
+      </div>
       <div class="camera-container">
-        <!-- Video y Canvas overlay -->
+        <!-- Video y Canvas overlay con aspect ratio -->
         <div class="video-wrapper">
           <!-- Video oculto - MediaPipe lo usa como fuente -->
           <video
@@ -33,62 +39,70 @@
         </div>
 
         <!-- Estado de la detección -->
-        <div class="detection-status">
+        <div class="detection-status" [class.active]="detectionState.handDetected">
           <span class="status-indicator" [class.active]="detectionState.handDetected"></span>
           @if (detectionState.handDetected) {
-            <span>Mano detectada</span>
+            <span class="status-text">Mano detectada</span>
           } @else {
-            <span>Esperando mano...</span>
+            <span class="status-text">Esperando mano...</span>
           }
         </div>
       </div>
     </div>
 
     <!-- Panel de visualización de la prótesis (Cámara USB) -->
-    <div class="hand-visualization-panel">
-      <h3>Visualización de la Mano</h3>
+    <div class="hand-visualization-panel panel-card">
+      <div class="panel-header">
+        <span class="panel-number">2</span>
+        <h3>Prótesis en Tiempo Real</h3>
+      </div>
       <div class="usb-camera-container">
         <!-- Stream de la cámara USB -->
-        @if (!cameraStreamState.hasError) {
-          <img
-            #usbCamera
-            [src]="cameraStreamState.url"
-            alt="Vista de la prótesis"
-            class="usb-camera-stream"
-            (load)="onCameraLoad()"
-            (error)="onCameraError()"
-          />
-        }
+        <div class="camera-stream-wrapper">
+          @if (!cameraStreamState.hasError) {
+            <img
+              #usbCamera
+              [src]="cameraStreamState.url"
+              alt="Vista de la prótesis"
+              class="usb-camera-stream"
+              (load)="onCameraLoad()"
+              (error)="onCameraError()"
+            />
+          }
 
-        <!-- Estado de carga -->
-        @if (!cameraStreamState.isLoaded && !cameraStreamState.hasError) {
-          <div class="camera-status loading">
-            <div class="spinner"></div>
-            <p>Cargando stream de la prótesis...</p>
-          </div>
-        }
+          <!-- Estado de carga -->
+          @if (!cameraStreamState.isLoaded && !cameraStreamState.hasError) {
+            <div class="camera-status loading">
+              <div class="spinner"></div>
+              <p>Conectando con la prótesis...</p>
+            </div>
+          }
 
-        <!-- Estado de error -->
-        @if (cameraStreamState.hasError) {
-          <div class="camera-status error">
-            <div class="error-icon">⚠️</div>
-            <p>{{ cameraStreamState.errorMessage || 'No se pudo cargar el stream' }}</p>
-            <button class="btn-retry" (click)="retryCameraStream()">
-              🔄 Reintentar
-            </button>
-          </div>
-        }
+          <!-- Estado de error -->
+          @if (cameraStreamState.hasError) {
+            <div class="camera-status error">
+              <div class="error-icon">⚠</div>
+              <p>{{ cameraStreamState.errorMessage || 'No se pudo conectar con la prótesis' }}</p>
+              <button class="btn-retry" (click)="retryCameraStream()">
+                Reintentar Conexión
+              </button>
+            </div>
+          }
 
-        <!-- Indicador de stream activo -->
-        @if (cameraStreamState.isLoaded) {
-          <div class="stream-indicator">
-            <span class="live-badge">🔴 EN VIVO</span>
-          </div>
-        }
+          <!-- Indicador de stream activo -->
+          @if (cameraStreamState.isLoaded) {
+            <div class="stream-indicator">
+              <span class="live-badge">
+                <span class="live-dot"></span>
+                EN VIVO
+              </span>
+            </div>
+          }
+        </div>
 
         <!-- Gesto detectado -->
         <div class="gesture-display">
-          <h4>Gesto Actual:</h4>
+          <h4>Gesto Reconocido</h4>
           <p class="gesture-text">{{ detectionState.currentGesture }}</p>
         </div>
       </div>
@@ -96,31 +110,44 @@
   </div>
 
   <!-- Panel de estado de dedos -->
-  <div class="finger-status-panel">
-    <h3>Estado de los Dedos</h3>
+  <div class="finger-status-panel panel-card">
+    <div class="panel-header">
+      <span class="panel-number">3</span>
+      <h3>Estado de los Dedos</h3>
+    </div>
     <div class="finger-grid">
       <div class="finger-item" [class.active]="detectionState.fingerStates.thumb">
-        <span class="finger-icon">👍</span>
+        <div class="finger-indicator" [class.active]="detectionState.fingerStates.thumb">
+          <span class="finger-icon">👍</span>
+        </div>
         <span class="finger-label">Pulgar</span>
         <span class="finger-state">{{ detectionState.fingerStates.thumb ? 'Extendido' : 'Contraído' }}</span>
       </div>
       <div class="finger-item" [class.active]="detectionState.fingerStates.index">
-        <span class="finger-icon">☝️</span>
+        <div class="finger-indicator" [class.active]="detectionState.fingerStates.index">
+          <span class="finger-icon">☝</span>
+        </div>
         <span class="finger-label">Índice</span>
         <span class="finger-state">{{ detectionState.fingerStates.index ? 'Extendido' : 'Contraído' }}</span>
       </div>
       <div class="finger-item" [class.active]="detectionState.fingerStates.middle">
-        <span class="finger-icon">🖕</span>
+        <div class="finger-indicator" [class.active]="detectionState.fingerStates.middle">
+          <span class="finger-icon">🖕</span>
+        </div>
         <span class="finger-label">Medio</span>
         <span class="finger-state">{{ detectionState.fingerStates.middle ? 'Extendido' : 'Contraído' }}</span>
       </div>
       <div class="finger-item" [class.active]="detectionState.fingerStates.ring">
-        <span class="finger-icon">💍</span>
+        <div class="finger-indicator" [class.active]="detectionState.fingerStates.ring">
+          <span class="finger-icon">💍</span>
+        </div>
         <span class="finger-label">Anular</span>
         <span class="finger-state">{{ detectionState.fingerStates.ring ? 'Extendido' : 'Contraído' }}</span>
       </div>
       <div class="finger-item" [class.active]="detectionState.fingerStates.pinky">
-        <span class="finger-icon">🤙</span>
+        <div class="finger-indicator" [class.active]="detectionState.fingerStates.pinky">
+          <span class="finger-icon">🤙</span>
+        </div>
         <span class="finger-label">Meñique</span>
         <span class="finger-state">{{ detectionState.fingerStates.pinky ? 'Extendido' : 'Contraído' }}</span>
       </div>
